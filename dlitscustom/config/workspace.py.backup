@@ -1,0 +1,226 @@
+from frappe import _
+
+def get_data():
+    return [
+        {
+            "module_name": "DLITS Custom",
+            "category": "Modules",
+            "label": _("DLITS Custom"),
+            "color": "#FF6B35",
+            "icon": "fa fa-cogs",
+            "type": "module",
+            "description": _("Advanced Pricing Rules and Sales Partner Commission Management"),
+            "onboard_present": 1,
+            "is_hidden": 0,
+            "shortcuts": [
+                # Pricing Rules Section
+                {
+                    "label": _("Pricing Rule Dlits"),
+                    "name": "Pricing Rule Dlits",
+                    "type": "DocType",
+                    "description": _("Create and manage advanced pricing rules with multiple base price types"),
+                    "color": "#3498db"
+                },
+                {
+                    "label": _("New Pricing Rule"),
+                    "name": "Pricing Rule Dlits",
+                    "type": "DocType",
+                    "is_query_report": 0,
+                    "description": _("Quick access to create new pricing rules"),
+                    "color": "#2ecc71"
+                },
+                
+                # Sales Partner Commission Section
+                {
+                    "label": _("DLITS Sales Partner"),
+                    "name": "DLITS Sales Partner",
+                    "type": "DocType",
+                    "description": _("Manage sales partners with automatic supplier linking and commission payments"),
+                    "color": "#e74c3c"
+                },
+                {
+                    "label": _("Commission Summary"),
+                    "name": "commission-summary",
+                    "type": "Page",
+                    "route": "/app/commission-summary",
+                    "description": _("View commission summaries and outstanding payments"),
+                    "color": "#f39c12"
+                },
+                
+                # Reports Section
+                {
+                    "label": _("Pricing Rules Analysis"),
+                    "name": "Pricing Rules Analysis",
+                    "type": "Report",
+                    "is_query_report": 1,
+                    "description": _("Comprehensive pricing rules analysis"),
+                    "color": "#9b59b6"
+                },
+                {
+                    "label": _("Commission Report"),
+                    "name": "DLITS Sales Partner Commission Report",
+                    "type": "Report",
+                    "is_query_report": 1,
+                    "description": _("Sales partner commission tracking and analysis"),
+                    "color": "#1abc9c"
+                },
+                {
+                    "label": _("Customer Ledger Report"),
+                    "name": "DLITS Customer Ledger Report",
+                    "type": "Report",
+                    "is_query_report": 1,
+                    "description": _("Customer invoices, payments, and balance analysis"),
+                    "color": "#2e7d32"
+                },
+                {
+                    "label": _("Supplier Ledger Report"),
+                    "name": "DLITS Supplier Ledger Report",
+                    "type": "Report",
+                    "is_query_report": 1,
+                    "description": _("Supplier invoices, payments, and balance analysis"),
+                    "color": "#dc3545"
+                },
+                {
+                    "label": _("Tax Report"),
+                    "name": "DLITS Tax Report",
+                    "type": "Report",
+                    "is_query_report": 1,
+                    "description": _("Tax analysis by rates for sales and purchases"),
+                    "color": "#6f42c1"
+                },
+                
+                # Quick Actions
+                {
+                    "label": _("Payment Entry"),
+                    "name": "Payment Entry",
+                    "type": "DocType",
+                    "description": _("Create commission payments"),
+                    "color": "#34495e"
+                },
+                {
+                    "label": _("Supplier"),
+                    "name": "Supplier", 
+                    "type": "DocType",
+                    "description": _("View linked suppliers for sales partners"),
+                    "color": "#95a5a6"
+                }
+            ],
+            "cards": [
+                {
+                    "label": _("Pricing Management"),
+                    "items": [
+                        {
+                            "type": "doctype",
+                            "name": "Pricing Rule Dlits",
+                            "label": _("Pricing Rules"),
+                            "description": _("Advanced pricing rules with 4 base price types: Price List Rate, Valuation Rate, Selling Rate, and Item Rate")
+                        },
+                        {
+                            "type": "doctype", 
+                            "name": "Item Price",
+                            "label": _("Item Prices"),
+                            "description": _("Standard ERPNext item pricing")
+                        },
+                        {
+                            "type": "page",
+                            "name": "pricing-rule-verification",
+                            "label": _("Price Verification"),
+                            "description": _("Verify pricing rule compliance and validation")
+                        }
+                    ]
+                },
+                {
+                    "label": _("Commission Management"),
+                    "items": [
+                        {
+                            "type": "doctype",
+                            "name": "DLITS Sales Partner",
+                            "label": _("DLITS Sales Partners"),
+                            "description": _("Manage sales partners with automatic supplier linking, commission tracking, and easy payment options")
+                        },
+                        {
+                            "type": "page",
+                            "name": "commission-dashboard",
+                            "label": _("Commission Dashboard"),
+                            "description": _("Overview of all commission activities, payments, and outstanding amounts")
+                        },
+                        {
+                            "type": "report",
+                            "name": "DLITS Sales Partner Commission Report",
+                            "label": _("Commission Report"),
+                            "description": _("Comprehensive commission tracking and payment analysis")
+                        }
+                    ]
+                },
+                {
+                    "label": _("Financial Reports"),
+                    "items": [
+                        {
+                            "type": "report",
+                            "name": "DLITS Customer Ledger Report",
+                            "label": _("Customer Ledger"),
+                            "description": _("Customer invoices, payments, balances, and aging analysis with PDF/Excel export")
+                        },
+                        {
+                            "type": "report",
+                            "name": "DLITS Supplier Ledger Report",
+                            "label": _("Supplier Ledger"),
+                            "description": _("Supplier invoices, payments, balances, and outstanding analysis with PDF/Excel export")
+                        },
+                        {
+                            "type": "report",
+                            "name": "DLITS Tax Report",
+                            "label": _("Tax Analysis"),
+                            "description": _("Tax amounts by rates for sales and purchase transactions with visual breakdown and PDF/Excel export")
+                        }
+                    ]
+                },
+                {
+                    "label": _("Sales Transactions"),
+                    "items": [
+                        {
+                            "type": "doctype",
+                            "name": "Sales Order",
+                            "label": _("Sales Orders"),
+                            "description": _("Sales orders with pricing rule and commission integration")
+                        },
+                        {
+                            "type": "doctype",
+                            "name": "Sales Invoice", 
+                            "label": _("Sales Invoices"),
+                            "description": _("Sales invoices with automatic pricing and commission calculation")
+                        },
+                        {
+                            "type": "doctype",
+                            "name": "Quotation",
+                            "label": _("Quotations"),
+                            "description": _("Quotations with pricing rule validation")
+                        }
+                    ]
+                },
+                {
+                    "label": _("Payment Processing"),
+                    "items": [
+                        {
+                            "type": "doctype",
+                            "name": "Payment Entry",
+                            "label": _("Payment Entries"),
+                            "description": _("Process commission payments to sales partners")
+                        },
+                        {
+                            "type": "doctype",
+                            "name": "Journal Entry",
+                            "label": _("Journal Entries"),
+                            "description": _("Commission accruals and adjustments")
+                        },
+                        {
+                            "type": "page",
+                            "name": "bulk-commission-payment",
+                            "label": _("Bulk Payments"),
+                            "description": _("Process multiple commission payments in one operation")
+                        }
+                    ]
+                }
+            ]
+        }
+    ]

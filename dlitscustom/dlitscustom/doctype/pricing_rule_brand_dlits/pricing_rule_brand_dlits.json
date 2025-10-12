@@ -1,0 +1,16 @@
+{
+  "doctype": "DocType",
+  "name": "Pricing Rule Brand Dlits",
+  "module": "dlitscustom",
+  "is_child_table": 1,
+  "row_format": "Dynamic",
+  "editable_grid": 1,
+  "fields": [
+    {"fieldname": "parent", "fieldtype": "Data", "hidden": 1},
+    {"fieldname": "parenttype", "fieldtype": "Data", "hidden": 1},
+    {"fieldname": "parentfield", "fieldtype": "Data", "hidden": 1},
+    {"fieldname": "brand", "fieldtype": "Link", "label": "Brand", "options": "Brand", "in_list_view": 1}
+  ],
+  "permissions": [],
+  "links": []
+}

@@ -1,6 +1,5 @@
-[pre_model_sync]
-# Patches added in this section will be executed before doctypes are migrated
-# Read docs to understand patches: https://frappeframework.com/docs/v14/user/en/database-migrations
+# Patches for dlitscustom app
+# Format: execute:path.to.patch.function
 
-[post_model_sync]
-# Patches added in this section will be executed after doctypes are migrated
+# Version 1.0 patches
+dlitscustom.patches.v1_0.update_custom_fields

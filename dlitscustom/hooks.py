@@ -1,25 +1,11 @@
+from . import __version__ as app_version
+
 app_name = "dlitscustom"
 app_title = "dlitscustom"
 app_publisher = "shihab"
-app_description = "Dlits Custom App"
+app_description = "Custom Modification For Dlits"
 app_email = "shihab@dlits-sa.com"
 app_license = "mit"
-
-# Apps
-# ------------------
-
-# required_apps = []
-
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "dlitscustom",
-# 		"logo": "/assets/dlitscustom/logo.png",
-# 		"title": "dlitscustom",
-# 		"route": "/dlitscustom",
-# 		"has_permission": "dlitscustom.api.permission.has_app_permission"
-# 	}
-# ]
 
 # Includes in <head>
 # ------------------
@@ -43,7 +29,13 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+    "Quotation": "public/js/quotation_pricing_rule_dlits.js",
+    "Sales Order": "public/js/sales_order_pricing_rule_dlits.js",
+    "Sales Invoice": "public/js/sales_invoice_pricing_rule_dlits.js",
+    "Payment Entry": "public/js/payment_entry_dlits.js",
+    "Journal Entry": "public/js/journal_entry_dlits.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -86,13 +78,13 @@ app_license = "mit"
 # ------------
 
 # before_install = "dlitscustom.install.before_install"
-# after_install = "dlitscustom.install.after_install"
+after_install = "dlitscustom.install.after_install"
 
 # Uninstallation
 # ------------
 
-# before_uninstall = "dlitscustom.uninstall.before_uninstall"
-# after_uninstall = "dlitscustom.uninstall.after_uninstall"
+before_uninstall = "dlitscustom.install.before_uninstall"
+# after_uninstall = "dlitscustom.install.after_uninstall"
 
 # Integration Setup
 # ------------------
@@ -132,13 +124,30 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+    "Sales Invoice": {
+        "validate": [
+            "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits",
+            "dlitscustom.override.sales_invoice_commission.validate_sales_invoice_commission"
+        ],
+        "on_submit": "dlitscustom.override.sales_invoice_commission.on_submit_sales_invoice_commission",
+        "on_cancel": "dlitscustom.override.sales_invoice_commission.on_cancel_sales_invoice_commission"
+    },
+    "Sales Order": {
+        "validate": [
+            "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits",
+            "dlitscustom.override.sales_order_commission.validate_sales_order_commission"
+        ]
+    },
+    "Quotation": {
+        "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
+    },
+}
+
+fixtures = [
+    {"doctype": "Property Setter"},
+    {"doctype": "DocType", "filters": [["name", "in", ["Pricing Rule Item Code Dlits Test"]]]}
+]
 
 # Scheduled Tasks
 # ---------------
@@ -236,4 +245,3 @@ app_license = "mit"
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-

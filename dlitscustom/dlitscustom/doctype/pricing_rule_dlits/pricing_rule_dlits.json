@@ -1,0 +1,47 @@
+{
+  "actions": [],
+  "allow_import": 1,
+  "allow_export": 1,
+  "allow_rename": 1,
+  "doctype": "DocType",
+  "name": "Pricing Rule Dlits",
+  "module": "dlitscustom",
+  "custom": 0,
+  "autoname": "Prompt",
+  "row_format": "Dynamic",
+  "editable_grid": 1,
+  "show_name_in_global_search": 1,
+  "track_changes": 1,
+  "is_submittable": 0,
+  "fields": [
+  {"fieldname": "section_break_main", "fieldtype": "Section Break"},
+  {"fieldname": "enabled", "fieldtype": "Check", "label": "Enabled", "default": 1},
+  {"fieldname": "priority", "fieldtype": "Int", "label": "Priority", "default": 0},
+  {"fieldname": "column_break_main_left", "fieldtype": "Column Break"},
+  {"fieldname": "price_list", "fieldtype": "Link", "label": "For Price List", "options": "Price List", "reqd": 0, "default": "Standard Selling"},
+
+  {"fieldname": "base_price_type", "fieldtype": "Select", "label": "Base Price Type", "options": "Price List Rate\nValuation Rate\nSelling Rate\nItem Rate", "default": "Selling Rate", "reqd": 1, "description": "Price List Rate: Uses ERPNext price list rate. Valuation Rate: Uses item master valuation rate. Selling Rate: Uses item master standard selling rate. Item Rate: Set direct price values in item table."},
+  {"fieldname": "discount_type", "fieldtype": "Select", "label": "Type (Margin or Discount)", "options": "Rate (Percentage)\nDiscount Percentage\nDiscount Amount\nMargin Amount", "default": "Rate (Percentage)", "reqd": 0, "description": "For Valuation Rate: margin is added. For Selling/Price List Rate: discount is subtracted.", "depends_on": "eval:doc.base_price_type != 'Item Rate'"},
+  {"fieldname": "discount_value", "fieldtype": "Float", "label": "Value (Margin or Discount)", "reqd": 0, "description": "Enter percentage or amount. Margin is added to valuation rate, discount is subtracted from selling/price list rate.", "depends_on": "eval:doc.base_price_type != 'Item Rate'"},
+
+  {"fieldname": "section_break_apply_on", "fieldtype": "Section Break"},
+  {"fieldname": "apply_on", "fieldtype": "Select", "label": "Apply On", "options": "Item Code\nItem Group\nBrand", "reqd": 1, "read_only_depends_on": "eval:doc.base_price_type == 'Item Rate'", "default": "Item Code"},
+  {"depends_on": "eval:doc.apply_on == 'Item Code'", "fieldname": "items", "fieldtype": "Table", "label": "Apply Rule On Item Code", "options": "Pricing Rule Item Code Dlits", "reqd": 0},
+  {"depends_on": "eval:doc.apply_on == 'Item Group'", "fieldname": "item_groups", "fieldtype": "Table", "label": "Apply Rule On Item Group", "options": "Pricing Rule Item Group Dlits", "reqd": 0},
+  {"depends_on": "eval:doc.apply_on == 'Brand'", "fieldname": "brands", "fieldtype": "Table", "label": "Apply Rule On Brand", "options": "Pricing Rule Brand Dlits", "reqd": 0},
+
+  {"fieldname": "column_break_apply_to", "fieldtype": "Column Break"},
+  {"fieldname": "apply_to", "fieldtype": "Select", "label": "Apply To", "options": "Customer\nCustomer Group", "reqd": 1},
+  {"depends_on": "eval:doc.apply_to == 'Customer'", "fieldname": "customers", "fieldtype": "Table", "label": "Apply Rule To Customer", "options": "Pricing Rule Customer Dlits", "reqd": 0},
+  {"depends_on": "eval:doc.apply_to == 'Customer Group'", "fieldname": "customer_groups", "fieldtype": "Table", "label": "Apply Rule To Customer Group", "options": "Pricing Rule Customer Group Dlits", "reqd": 0}
+],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "export": 1, "import": 1},
+    {"role": "Sales Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "export": 1, "import": 1},
+    {"role": "Sales User", "read": 1, "write": 1, "create": 1, "export": 1},
+    {"role": "Accounts Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "export": 1, "import": 1},
+    {"role": "Accounts User", "read": 1, "write": 1, "create": 1, "export": 1}
+  ]
+}
+
+
