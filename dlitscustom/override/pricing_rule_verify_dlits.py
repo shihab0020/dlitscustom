@@ -5,7 +5,7 @@ def pricing_rule_verify_dlits(doc, method=None):
     """Verify pricing rules compliance"""
     # Define roles that can bypass pricing rule validation
     #allowed_roles = ["", "", ""]
-    allowed_roles = ["Sales Manager", "Accounts Manager", "System Manager"]
+    allowed_roles = ["Shb Allow Below Price"]
     user_roles = frappe.get_roles(frappe.session.user)
     is_allowed = any(role in allowed_roles for role in user_roles)
     if is_allowed:

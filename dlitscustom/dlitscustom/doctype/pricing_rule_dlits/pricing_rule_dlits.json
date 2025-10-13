@@ -16,7 +16,7 @@
   "fields": [
   {"fieldname": "section_break_main", "fieldtype": "Section Break"},
   {"fieldname": "enabled", "fieldtype": "Check", "label": "Enabled", "default": 1},
-  {"fieldname": "priority", "fieldtype": "Int", "label": "Priority", "default": 0},
+  {"fieldname": "priority", "fieldtype": "Int", "label": "Priority", "default": 0, "description": "Lower numbers have higher priority. Priority 0 rules are applied first, followed by Priority 1, then Priority 2, etc. Only the first matching rule is applied."},
   {"fieldname": "column_break_main_left", "fieldtype": "Column Break"},
   {"fieldname": "price_list", "fieldtype": "Link", "label": "For Price List", "options": "Price List", "reqd": 0, "default": "Standard Selling"},
 
