@@ -113,11 +113,11 @@ def get_data(filters):
 				ELSE ''
 			END as source,
 			tt.to_type,
-			CASE 
+			CASE
 				WHEN tt.to_type = 'Warehouse' THEN tt.to_warehouse
 				WHEN tt.to_type = 'Employee' THEN CONCAT(tt.to_employee, ' - ', emp2.employee_name)
 				ELSE ''
-			END as to,
+			END as `to`,
 			tt.status,
 			tt.notes
 		FROM `tabTools Transfer Dlits` tt

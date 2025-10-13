@@ -183,7 +183,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Tools Management",
-   "link_count": 2,
+   "link_count": 3,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -205,6 +205,16 @@
    "link_count": 0,
    "link_to": "Tools Transfer Report",
    "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee Tools Allocation",
+   "link_count": 0,
+   "link_to": "Employee Tools Allocation",
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
   }
@@ -292,6 +302,13 @@
    "label": "Tools Transfer Report",
    "link_to": "Tools Transfer Report",
    "type": "Report"
+  },
+  {
+   "color": "#fd7e14",
+   "doc_view": "List",
+   "label": "Employee Tools Allocation",
+   "link_to": "Employee Tools Allocation",
+   "type": "DocType"
   }
  ],
  "title": "DLITS Custom"

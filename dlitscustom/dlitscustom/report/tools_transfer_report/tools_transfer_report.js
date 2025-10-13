@@ -81,8 +81,8 @@ frappe.query_reports["Tools Transfer Report"] = {
 	
 	"onload": function(report) {
 		// Add custom buttons
-		report.page.add_inner_button(__("Tools Allocation Summary"), function() {
-			frappe.set_route("query-report", "Employee Tools Allocation Summary");
+		report.page.add_inner_button(__("New Transfer"), function() {
+			frappe.new_doc("Tools Transfer Dlits");
 		});
 		
 		report.page.add_inner_button(__("New Transfer"), function() {
