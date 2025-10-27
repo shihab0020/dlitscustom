@@ -79,11 +79,7 @@ frappe.query_reports["DLITS Customer Ledger Report"] = {
 		report.page.add_inner_button(__("Export to Excel"), function() {
 			frappe.query_report.export_report('DLITS Customer Ledger Report', 'Excel');
 		});
-		
-		report.page.add_inner_button(__("Export to PDF"), function() {
-			frappe.query_report.export_report('DLITS Customer Ledger Report', 'PDF');
-		});
-		
+
 		report.page.add_inner_button(__("Print"), function() {
 			frappe.query_report.print_report('DLITS Customer Ledger Report');
 		});

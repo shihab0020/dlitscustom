@@ -108,7 +108,7 @@ def get_data(filters):
     data = []
     
     for customer in customers:
-        customer_data = get_customer_ledger_data(customer.name, from_date, to_date, filters)
+        customer_data = get_customer_ledger_data(customer.get("name"), from_date, to_date, filters)
         if customer_data or filters.get("show_zero_balance"):
             data.extend(customer_data)
     

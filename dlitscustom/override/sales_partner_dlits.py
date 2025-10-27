@@ -11,7 +11,7 @@ def sales_partner_after_insert(doc, method=None):
         
         if existing_supplier:
             # Link existing supplier to sales partner
-            frappe.db.set_value("Supplier", existing_supplier, "sales_partner_link", doc.name)
+            frappe.db.set_value("DLITS Sales Partner", doc.name, "supplier", existing_supplier)
             frappe.db.commit()
             frappe.msgprint(
                 _("Existing Supplier '{0}' has been linked to Sales Partner '{1}'").format(
@@ -27,7 +27,6 @@ def sales_partner_after_insert(doc, method=None):
                 "supplier_name": doc.partner_name,
                 "supplier_group": get_default_supplier_group(),
                 "supplier_type": "Individual" if doc.partner_type == "Individual" else "Company",
-                "sales_partner_link": doc.name,
                 "is_frozen": 0
             })
             
@@ -64,7 +63,7 @@ def sales_partner_on_update(doc, method=None):
     """
     try:
         # Find linked supplier
-        linked_supplier = frappe.db.get_value("Supplier", {"sales_partner_link": doc.name}, "name")
+        linked_supplier = frappe.db.get_value("DLITS Sales Partner", doc.name, "supplier")
         
         if linked_supplier:
             # Update supplier details
@@ -114,7 +113,7 @@ def get_sales_partner_supplier(sales_partner):
     if not sales_partner:
         return None
         
-    supplier = frappe.db.get_value("Supplier", {"sales_partner_link": sales_partner}, "name")
+    supplier = frappe.db.get_value("DLITS Sales Partner", sales_partner, "supplier")
     return supplier
 
 @frappe.whitelist()

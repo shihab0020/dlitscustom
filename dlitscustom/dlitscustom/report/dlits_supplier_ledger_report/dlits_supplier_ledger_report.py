@@ -108,7 +108,7 @@ def get_data(filters):
     data = []
     
     for supplier in suppliers:
-        supplier_data = get_supplier_ledger_data(supplier.name, from_date, to_date, filters)
+        supplier_data = get_supplier_ledger_data(supplier.get("name"), from_date, to_date, filters)
         if supplier_data or filters.get("show_zero_balance"):
             data.extend(supplier_data)
     

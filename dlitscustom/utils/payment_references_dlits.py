@@ -16,7 +16,7 @@ def get_outstanding_commission_references(sales_partner, from_date=None, to_date
     references = []
     
     # Get linked supplier
-    linked_supplier = frappe.db.get_value("Supplier", {"sales_partner_link": sales_partner}, "name")
+    linked_supplier = frappe.db.get_value("DLITS Sales Partner", sales_partner, "supplier")
     
     if not linked_supplier:
         return references
@@ -68,7 +68,7 @@ def create_commission_journal_entries(sales_partner, commission_amount, referenc
             reference_date = frappe.utils.today()
         
         # Get linked supplier
-        linked_supplier = frappe.db.get_value("Supplier", {"sales_partner_link": sales_partner}, "name")
+        linked_supplier = frappe.db.get_value("DLITS Sales Partner", sales_partner, "supplier")
         
         if not linked_supplier:
             frappe.throw(_("No linked supplier found for Sales Partner {0}").format(sales_partner))
@@ -233,7 +233,7 @@ def create_commission_journal_entry_for_transaction(sales_partner, commission_am
     """
     try:
         # Get linked supplier
-        linked_supplier = frappe.db.get_value("Supplier", {"sales_partner_link": sales_partner}, "name")
+        linked_supplier = frappe.db.get_value("DLITS Sales Partner", sales_partner, "supplier")
         
         if not linked_supplier:
             frappe.throw(_("No linked supplier found for Sales Partner {0}").format(sales_partner))

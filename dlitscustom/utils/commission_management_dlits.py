@@ -29,7 +29,7 @@ def get_sales_partner_commission_summary(sales_partner, from_date=None, to_date=
     # This ensures consistency with our commission-only-from-invoices approach
     
     # Get paid commission (from Payment Entries only - avoid double counting)
-    linked_supplier = frappe.db.get_value("Supplier", {"sales_partner_link": sales_partner}, "name")
+    linked_supplier = frappe.db.get_value("DLITS Sales Partner", sales_partner, "supplier")
     paid_commission = 0
     
     # Use a single comprehensive query to avoid double counting
@@ -158,8 +158,8 @@ def get_sales_partner_payment_history(sales_partner, from_date=None, to_date=Non
     if not to_date:
         to_date = today()
     
-    linked_supplier = frappe.db.get_value("Supplier", {"sales_partner_link": sales_partner}, "name")
-    
+    linked_supplier = frappe.db.get_value("DLITS Sales Partner", sales_partner, "supplier")
+
     if not linked_supplier:
         return []
     
@@ -246,8 +246,8 @@ def create_bulk_commission_payments(sales_partners_data):
                 continue
             
             # Get linked supplier
-            linked_supplier = frappe.db.get_value("Supplier", {"sales_partner_link": sales_partner}, "name")
-            
+            linked_supplier = frappe.db.get_value("DLITS Sales Partner", sales_partner, "supplier")
+
             if not linked_supplier:
                 errors.append(f"No linked supplier found for {sales_partner}")
                 continue
@@ -349,7 +349,7 @@ def debug_commission_calculation(sales_partner, from_date=None, to_date=None):
     if not to_date:
         to_date = today()
     
-    linked_supplier = frappe.db.get_value("Supplier", {"sales_partner_link": sales_partner}, "name")
+    linked_supplier = frappe.db.get_value("DLITS Sales Partner", sales_partner, "supplier")
     
     debug_info = {
         "sales_partner": sales_partner,

@@ -232,6 +232,18 @@ fixtures = [
 # 	}
 # ]
 
+# Reports
+# -------
+
+# reports = [
+#     {
+#         "doctype": "Report",
+#         "name": "DLITS Sales Analytics",
+#         "module": "dlitscustom",
+#         "category": "Sales"
+#     }
+# ]
+
 # Authentication and authorization
 # --------------------------------
 

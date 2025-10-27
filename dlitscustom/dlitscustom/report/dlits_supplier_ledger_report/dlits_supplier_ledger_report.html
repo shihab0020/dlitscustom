@@ -1,167 +1,68 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>DLITS Supplier Ledger Report</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #dc3545;
-            padding-bottom: 15px;
-        }
-        .header h1 {
-            color: #dc3545;
-            margin: 0;
-            font-size: 24px;
-        }
-        .filters {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 12px;
-        }
-        .filters strong {
-            color: #dc3545;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 11px;
-        }
-        th {
-            background-color: #dc3545;
-            color: white;
-            padding: 8px;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
-        td {
-            padding: 6px 8px;
-            border: 1px solid #ddd;
-            vertical-align: top;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .summary-row {
-            background-color: #f8e8e8 !important;
-            font-weight: bold;
-        }
-        .separator-row {
-            border-top: 2px solid #dc3545;
-        }
-        .amount {
-            text-align: right;
-        }
-        .positive {
-            color: #28a745;
-        }
-        .negative {
-            color: #dc3545;
-        }
-        .outstanding {
-            color: #fd7e14;
-            font-weight: bold;
-        }
-        .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 10px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
-        }
-        .page-break {
-            page-break-before: always;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>DLITS Supplier Ledger Report</h1>
-        <p style="margin: 5px 0; color: #666;">Comprehensive Supplier Transaction Analysis</p>
-    </div>
-
-    <div class="filters">
-        <strong>Report Filters:</strong>
-        <% if (filters.from_date) { %>
-            From Date: <strong><%=filters.from_date%></strong> |
-        <% } %>
-        <% if (filters.to_date) { %>
-            To Date: <strong><%=filters.to_date%></strong> |
-        <% } %>
-        <% if (filters.supplier) { %>
-            Supplier: <strong><%=filters.supplier%></strong> |
-        <% } %>
-        <% if (filters.payment_status) { %>
-            Payment Status: <strong><%=filters.payment_status%></strong> |
-        <% } %>
-        Generated on: <strong><%=new Date().toLocaleString()%></strong>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 12%;">Date</th>
-                <th style="width: 15%;">Supplier</th>
-                <th style="width: 12%;">Document</th>
-                <th style="width: 10%;">Type</th>
-                <th style="width: 10%;">Invoice Amount</th>
-                <th style="width: 10%;">Payment Amount</th>
-                <th style="width: 10%;">Running Balance</th>
-                <th style="width: 8%;">Days Outstanding</th>
-                <th style="width: 13%;">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% for (var i = 0; i < data.length; i++) { %>
-                <% var row = data[i]; %>
-                <% var isSummary = row.supplier && (row.supplier.includes('TOTAL') || row.supplier.includes('Total') || row.supplier.includes('─')); %>
-                <% var isSupplierTotal = row.supplier && row.supplier.includes('Supplier Total:'); %>
-                
-                <tr class="<%= isSummary ? 'summary-row' : '' %> <%= isSupplierTotal ? 'separator-row' : '' %>">
-                    <td><%= row.posting_date || '' %></td>
-                    <td><%= row.supplier || '' %></td>
-                    <td><%= row.document || '' %></td>
-                    <td><%= row.transaction_type || '' %></td>
-                    <td class="amount <%= row.invoice_amount > 0 ? 'negative' : '' %>">
-                        <%= row.invoice_amount ? parseFloat(row.invoice_amount).toLocaleString('en-US', {minimumFractionDigits: 2}) : '' %>
-                    </td>
-                    <td class="amount <%= row.payment_amount > 0 ? 'positive' : '' %>">
-                        <%= row.payment_amount ? parseFloat(row.payment_amount).toLocaleString('en-US', {minimumFractionDigits: 2}) : '' %>
-                    </td>
-                    <td class="amount <%= row.running_balance > 0 ? 'outstanding' : 'positive' %>">
-                        <%= row.running_balance ? parseFloat(row.running_balance).toLocaleString('en-US', {minimumFractionDigits: 2}) : '' %>
-                    </td>
-                    <td class="amount">
-                        <%= row.days_outstanding || '' %>
-                    </td>
-                    <td>
-                        <% if (row.payment_status === 'Outstanding') { %>
-                            <span class="outstanding"><%=row.payment_status%></span>
-                        <% } else if (row.payment_status === 'Paid') { %>
-                            <span class="positive"><%=row.payment_status%></span>
-                        <% } else { %>
-                            <%=row.payment_status || ''%>
-                        <% } %>
-                    </td>
-                </tr>
-            <% } %>
-        </tbody>
-    </table>
-
-    <div class="footer">
-        <p><strong>DLITS Custom - Supplier Ledger Report</strong></p>
-        <p>This report provides a comprehensive view of supplier transactions, payments, and outstanding balances.</p>
-        <p>Report generated on <%=new Date().toLocaleString()%> | Page 1</p>
-    </div>
-</body>
-</html>
+<div style="font-family:Arial">
+	<div>
+		<div style="text-align:center; font-size:15px; text-decoration:underline;">
+			<b>
+				{%= __("SUPPLIER LEDGER REPORT") %}<br>
+				{% if (filters.supplier) { %}
+					<br>{%= filters.supplier %}
+				{% } else { %}
+					<br>{%= __("All Suppliers") %}
+				{% } %}
+			</b>
+		</div>
+		<div style="text-align:center; font-size:13px;">
+			<b>
+				{%= __("{0} to {1}", [frappe.datetime.str_to_user(filters.from_date), frappe.datetime.str_to_user(filters.to_date)]) %}<br><br>
+			</b>
+		</div>
+	</div>
+	<table style="width:100%; font-size: 11px">
+		<thead>
+			<tr style="text-align: center; font-weight:bold">
+				<td style="border: 1.5px solid black; width: 7em">{%= __("Date").toLocaleUpperCase() %}</td>
+				<td style="border: 1.5px solid black">{%= __("Supplier").toLocaleUpperCase() %}</td>
+				<td style="border: 1.5px solid black">{%= __("Document Type").toLocaleUpperCase() %}</td>
+				<td style="border: 1.5px solid black">{%= __("Document No").toLocaleUpperCase() %}</td>
+				<td style="border: 1.5px solid black">{%= __("Description").toLocaleUpperCase() %}</td>
+				<td style="border: 1.5px solid black; width: 9em">{%= __("Debit").toLocaleUpperCase() %}</td>
+				<td style="border: 1.5px solid black; width: 9em">{%= __("Credit").toLocaleUpperCase() %}</td>
+				<td style="border: 1.5px solid black; width: 10.2em">{%= __("Balance").toLocaleUpperCase() %}</td>
+			</tr>
+		</thead>
+		<tbody>
+			{% for(var i=0, l=data.length; i<l; i++) { %}
+				<tr style="border-bottom: 1px solid black">
+					<td style="text-align: center; border: 1px dotted black">
+						{%= frappe.datetime.str_to_user(data[i].date) %}
+					</td>
+					<td style="border-right: 1px dotted black">
+						{%= data[i].supplier_name || data[i].supplier %}
+					</td>
+					<td style="border-right: 1px dotted black">
+						{%= data[i].document_type %}
+					</td>
+					<td style="border-right: 1px dotted black">
+						{%= data[i].document_no %}
+					</td>
+					<td style="border-right: 1px dotted black">
+						{%= data[i].description %}
+					</td>
+					<td style="text-align: right; border-right: 1px dotted black">
+						{% if data[i].debit != 0 %}
+							{%= format_currency(data[i].debit, data[i].currency || "SAR") %}
+						{% } %}
+					</td>
+					<td style="text-align: right; border-right: 1px dotted black">
+						{% if data[i].credit != 0 %}
+							{%= format_currency(data[i].credit, data[i].currency || "SAR") %}
+						{% } %}
+					</td>
+					<td style="text-align: right; border-right: 1px dotted black">
+						{%= format_currency(data[i].balance, data[i].currency || "SAR") %}
+					</td>
+				</tr>
+			{% endfor%}
+		</tbody>
+	</table>
+	<p class="text-right text-muted">{%= __("Printed on {0}", [frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string())]) %}</p>
+</div>

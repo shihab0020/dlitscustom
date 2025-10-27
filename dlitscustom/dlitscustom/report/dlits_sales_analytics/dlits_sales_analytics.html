@@ -1,0 +1,57 @@
+<div style="font-family:Arial">
+	<div>
+		<div style="text-align:center; font-size:15px; text-decoration:underline;">
+			<b>
+				{%= __("DLITS SALES ANALYTICS REPORT") %}<br>
+				{% if (filters.tree_type) { %}
+					<br>{%= __("Tree Type") %}: {%= filters.tree_type %}
+				{% } %}
+				{% if (filters.cost_center) { %}
+					<br>{%= __("Cost Center") %}: {%= filters.cost_center %}
+				{% } %}
+			</b>
+		</div>
+		<div style="text-align:center; font-size:13px;">
+			<b>
+				{%= __("{0} to {1}", [frappe.datetime.str_to_user(filters.from_date), frappe.datetime.str_to_user(filters.to_date)]) %}<br><br>
+			</b>
+		</div>
+	</div>
+	<table style="width:100%; font-size: 11px">
+		<thead>
+			<tr style="text-align: center; font-weight:bold">
+				<td style="border: 1.5px solid black; width: 7em">{%= __("Entity").toLocaleUpperCase() %}</td>
+				{% if (filters.tree_type == "Customer" || filters.tree_type == "Supplier" || filters.tree_type == "Item") { %}
+					<td style="border: 1.5px solid black">{%= __(filters.tree_type + " Name").toLocaleUpperCase() %}</td>
+				{% } %}
+				{% if (filters.tree_type == "Item") { %}
+					<td style="border: 1.5px solid black">{%= __("UOM").toLocaleUpperCase() %}</td>
+				{% } %}
+				<td style="border: 1.5px solid black; width: 9em">{%= __("Total").toLocaleUpperCase() %}</td>
+			</tr>
+		</thead>
+		<tbody>
+			{% for(var i=0, l=data.length; i<l; i++) { %}
+				<tr style="border-bottom: 1px solid black">
+					<td style="text-align: center; border: 1px dotted black">
+						{%= data[i].entity %}
+					</td>
+					{% if (filters.tree_type == "Customer" || filters.tree_type == "Supplier" || filters.tree_type == "Item") { %}
+						<td style="border-right: 1px dotted black">
+							{%= data[i].entity_name || "" %}
+						</td>
+					{% } %}
+					{% if (filters.tree_type == "Item") { %}
+						<td style="border-right: 1px dotted black">
+							{%= data[i].stock_uom || "" %}
+						</td>
+					{% } %}
+					<td style="text-align: right; border-right: 1px dotted black">
+						{%= format_currency(data[i].total, "SAR") %}
+					</td>
+				</tr>
+			{% endfor%}
+		</tbody>
+	</table>
+	<p class="text-right text-muted">{%= __("Printed on {0}", [frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string())]) %}</p>
+</div>
