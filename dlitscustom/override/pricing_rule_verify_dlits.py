@@ -69,8 +69,8 @@ def pricing_rule_verify_dlits(doc, method=None):
         if item_valuation_rate and rate < item_valuation_rate:
             errors.append(f"Item {frappe.bold(item_code)}: Price ({rate}) is below Item Valuation Rate ({item_valuation_rate}).")
         # D (alt). Not allow below doc item valuation rate
-        if valuation_rate is not None and rate < valuation_rate:
-            errors.append(f"Item {frappe.bold(item_code)}: Price ({rate}) is below Document Valuation Rate ({valuation_rate}).")
+        # if valuation_rate is not None and rate < valuation_rate:
+        #     errors.append(f"Item {frappe.bold(item_code)}: Price ({rate}) is below Document Valuation Rate ({valuation_rate}).")
     if errors:
         if is_allowed:
             frappe.logger().warning(f"Pricing rule warnings for user {frappe.session.user}: {'; '.join(errors)}")
