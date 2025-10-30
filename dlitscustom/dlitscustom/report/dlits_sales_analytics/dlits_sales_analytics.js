@@ -10,6 +10,8 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 			options: [
 				"Customer Group",
 				"Customer",
+				"Supplier Group",
+				"Supplier",
 				"Item Group",
 				"Item",
 				"Territory",
@@ -31,6 +33,9 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 				"Sales Invoice",
 				"Sales Invoice (due)",
 				"Payment Entry",
+				"Purchase Order",
+				"Purchase Invoice",
+				"Purchase Invoice (due)",
 			],
 			default: "Sales Invoice",
 			reqd: 1,
@@ -40,8 +45,8 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 			label: __("Value Or Qty"),
 			fieldtype: "Select",
 			options: [
-				{ value: "Value", label: __("Value") },
-				{ value: "Quantity", label: __("Quantity") },
+				"Value",
+				"Quantity",
 			],
 			default: "Value",
 			reqd: 1,
@@ -69,7 +74,7 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 			label: __("Company"),
 			fieldtype: "Link",
 			options: "Company",
-			default: frappe.defaults.get_user_default("Company"),
+			default: "Alejtihadat Trading Est.",
 			reqd: 1,
 		},
 		{
@@ -77,10 +82,10 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 			label: __("Range"),
 			fieldtype: "Select",
 			options: [
-				{ value: "Weekly", label: __("Weekly") },
-				{ value: "Monthly", label: __("Monthly") },
-				{ value: "Quarterly", label: __("Quarterly") },
-				{ value: "Yearly", label: __("Yearly") },
+				"Weekly",
+				"Monthly",
+				"Quarterly",
+				"Yearly",
 			],
 			default: "Monthly",
 			reqd: 1,
@@ -90,12 +95,26 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 			label: __("Curves"),
 			fieldtype: "Select",
 			options: [
-				{ value: "select", label: __("Select") },
-				{ value: "all", label: __("All") },
-				{ value: "non-zeros", label: __("Non-Zeros") },
-				{ value: "total", label: __("Total Only") },
+				"select",
+				"all",
+				"non-zeros",
+				"total",
 			],
-			default: "select",
+			default: "total",
+			reqd: 1,
+		},
+		{
+			fieldname: "chart_type",
+			label: __("Chart Type"),
+			fieldtype: "Select",
+			options: [
+				"line",
+				"bar",
+				"pie",
+				"doughnut",
+				"area",
+			],
+			default: "bar",
 			reqd: 1,
 		},
 		{
@@ -110,7 +129,35 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 			label: __("Show Aggregate Value from Subsidiary Companies"),
 			fieldtype: "Check",
 		},
+		{
+			fieldname: "additional_filters",
+			label: __("Additional Filters"),
+			fieldtype: "Small Text",
+			default: "cost_center != 'Tax Filing - ATE' OR cost_center != 'XT-EXP - ATE'",
+			css_class: "additional-filters-compact",
+		},
+		// {
+		// 	fieldname: "additional_filters_help",
+		// 	label: __("Additional Filters Help"),
+		// 	fieldtype: "HTML",
+		// 	options: `<div>How to use Additional Filters:<br> cost_center != 'Tax Filing - ATE'<br>• customer_group == 'VIP'<br>Supported operators:</strong> ==, !=, <, <=, >, >=, like, not like, in, not in<br>Combine conditions: Use AND/OR to combine multiple conditions</div>`,
+		// },
 	],
+	onload: function(report) {
+		// Apply custom CSS to make the additional filters field more compact
+		setTimeout(() => {
+			const additionalFiltersField = $(`[data-fieldname="additional_filters"] textarea`);
+			if (additionalFiltersField.length) {
+				additionalFiltersField.css({
+					'height': '60px',
+					'min-height': '60px',
+					'max-height': '80px',
+					'resize': 'vertical',
+					'width': '100%'
+				});
+			}
+		}, 100);
+	},
 	get_datatable_options(options) {
 		return Object.assign(options, {
 			checkboxColumn: true,

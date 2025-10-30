@@ -13,7 +13,7 @@
    "fieldname": "tree_type",
    "fieldtype": "Select",
    "label": "Tree Type",
-   "options": "Customer Group\nCustomer\nItem Group\nItem\nTerritory\nOrder Type\nProject",
+   "options": "Customer Group\nCustomer\nSupplier Group\nSupplier\nItem Group\nItem\nTerritory\nOrder Type\nProject",
    "reqd": 1,
    "default": "Customer"
   },
@@ -21,7 +21,7 @@
    "fieldname": "doc_type",
    "fieldtype": "Select",
    "label": "Based On",
-   "options": "All\nQuotation\nSales Order\nDelivery Note\nSales Invoice\nSales Invoice (due)\nPayment Entry",
+   "options": "All\nQuotation\nSales Order\nDelivery Note\nSales Invoice\nSales Invoice (due)\nPayment Entry\nPurchase Order\nPurchase Invoice\nPurchase Invoice (due)",
    "reqd": 1,
    "default": "Sales Invoice"
   },
@@ -66,7 +66,7 @@
    "label": "Curves",
    "options": "select\nall\nnon-zeros\ntotal",
    "reqd": 1,
-   "default": "select"
+   "default": "total"
   },
   {
    "fieldname": "cost_center",
@@ -80,6 +80,11 @@
    "fieldname": "show_aggregate_value_from_subsidiary_companies",
    "fieldtype": "Check",
    "label": "Show Aggregate Value from Subsidiary Companies"
+  },
+  {
+   "fieldname": "additional_filters",
+   "fieldtype": "Small Text",
+   "label": "Additional Filters"
   }
  ],
  "idx": 0,

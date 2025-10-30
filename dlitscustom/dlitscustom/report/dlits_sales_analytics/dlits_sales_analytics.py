@@ -25,6 +25,9 @@ def execute(filters=None):
 			"Sales Invoice",
 			"Sales Invoice (due)",
 			"Payment Entry",
+			"Purchase Order",
+			"Purchase Invoice",
+			"Purchase Invoice (due)",
 		]:
 			filters.doc_type = dt
 			output = append_report(dt, output, Analytics(filters).run())
@@ -52,17 +55,21 @@ def append_report(dt, org, new):
 class Analytics:
 	def __init__(self, filters=None):
 		self.filters = frappe._dict(filters or {})
+		self.data = []  # Initialize data attribute
+		self.validate_tree_type_and_doc_type()
 		if self.filters.doc_type == "Payment Entry" and self.filters.value_quantity == "Quantity":
 			frappe.throw(_("Only Value available for Payment Entry"))
 		self.date_field = (
 			"transaction_date"
 			if self.filters.doc_type in ["Quotation", "Sales Order", "Purchase Order"]
 			else "due_date"
-			if self.filters.doc_type == "Sales Invoice (due)"
+			if self.filters.doc_type in ["Sales Invoice (due)", "Purchase Invoice (due)"]
 			else "posting_date"
 		)
-		if self.filters.doc_type.startswith("Sales Invoice"):
+		if self.filters.doc_type and self.filters.doc_type.startswith("Sales Invoice"):
 			self.filters.doc_type = "Sales Invoice"
+		elif self.filters.doc_type and self.filters.doc_type.startswith("Purchase Invoice"):
+			self.filters.doc_type = "Purchase Invoice"
 		self.months = [
 			"Jan",
 			"Feb",
@@ -78,6 +85,36 @@ class Analytics:
 			"Dec",
 		]
 		self.get_period_date_ranges()
+
+	def validate_tree_type_and_doc_type(self):
+		"""Validate that tree type and document type are compatible"""
+		sales_tree_types = ["Customer", "Customer Group"]
+		purchase_tree_types = ["Supplier", "Supplier Group"]
+		neutral_tree_types = ["Item", "Item Group", "Territory", "Order Type", "Project"]
+
+		sales_doc_types = ["Quotation", "Sales Order", "Delivery Note", "Sales Invoice", "Sales Invoice (due)"]
+		purchase_doc_types = ["Purchase Order", "Purchase Invoice", "Purchase Invoice (due)"]
+		neutral_doc_types = ["Payment Entry", "All"]
+
+		tree_type = self.filters.get("tree_type")
+		doc_type = self.filters.get("doc_type")
+
+		if not tree_type or not doc_type:
+			return  # Let normal validation handle required fields
+
+		# Check for incompatible combinations
+		if tree_type in sales_tree_types and doc_type in purchase_doc_types:
+			frappe.throw(_("Tree Type '{0}' is not compatible with Document Type '{1}'. Please select a Sales document type.").format(tree_type, doc_type))
+
+		if tree_type in purchase_tree_types and doc_type in sales_doc_types:
+			frappe.throw(_("Tree Type '{0}' is not compatible with Document Type '{1}'. Please select a Purchase document type.").format(tree_type, doc_type))
+
+		# Special validations
+		if tree_type == "Order Type" and doc_type not in ["Quotation", "Sales Order", "Purchase Order"]:
+			frappe.throw(_("Tree Type 'Order Type' is only compatible with Quotation, Sales Order, and Purchase Order."))
+
+		if tree_type == "Project" and doc_type == "Quotation":
+			frappe.throw(_("Tree Type 'Project' is not compatible with Document Type 'Quotation'."))
 
 	def update_company_list_for_parent_company(self):
 		company_list = [self.filters.get("company")]
@@ -177,21 +214,21 @@ class Analytics:
 			self.get_rows_by_group()
 
 		elif self.filters.tree_type == "Order Type":
-			if self.filters.doc_type not in ["Quotation", "Sales Order"]:
+			if self.filters.doc_type not in ["Quotation", "Sales Order", "Purchase Order"]:
 				self.data = []
 				return
 			self.get_sales_transactions_based_on_order_type()
 			self.get_rows_by_group()
 
 		elif self.filters.tree_type == "Project":
-			if self.filters.doc_type == "Quotation":
+			if self.filters.doc_type in ["Quotation"]:
 				self.data = []
 				return
 			self.get_sales_transactions_based_on_project()
 			self.get_rows()
 
 	def get_sales_transactions_based_on_order_type(self):
-		if self.filters["value_quantity"] == "Value":
+		if self.filters.get("value_quantity") == "Value":
 			value_field = "base_net_total"
 		else:
 			value_field = "total_qty"
@@ -217,12 +254,18 @@ class Analytics:
 		if self.filters.get("cost_center"):
 			query = query.where(doctype.cost_center == self.filters.cost_center)
 
+		# Add additional filters if provided
+		if self.filters.get("additional_filters"):
+			additional_conditions = self.parse_additional_filters()
+			for condition in additional_conditions:
+				query = query.where(condition)
+
 		self.entries = query.orderby(doctype.order_type).run(as_dict=True)
 
 		self.get_teams()
 
 	def get_sales_transactions_based_on_customers_or_suppliers(self):
-		if self.filters["value_quantity"] == "Value":
+		if self.filters.get("value_quantity") == "Value":
 			value_field = "base_net_total as value_field"
 		else:
 			value_field = "total_qty as value_field"
@@ -238,36 +281,62 @@ class Analytics:
 			else:
 				entity = "customer as entity"
 		else:
-			entity = "supplier as entity"
 			entity_name = "supplier_name as entity_name"
 			if self.filters.doc_type == "Payment Entry":
 				entity = "party as entity"
 				entity_name = "party_name as entity_name"
 				value_field = "base_paid_amount as value_field"
+			else:
+				entity = "supplier as entity"
 
-		filters = {
-			"docstatus": 1,
-			"company": ["in", self.filters.company],
-			self.date_field: ("between", [self.filters.from_date, self.filters.to_date]),
-		}
+		# Use frappe.qb for complex queries with additional filters
+		doctype = DocType(self.filters.doc_type)
+
+		query = (
+			frappe.qb.from_(doctype)
+			.select(
+				doctype[entity.split(" as ")[0]].as_("entity"),
+				doctype[entity_name.split(" as ")[0]].as_("entity_name"),
+				doctype[value_field.split(" as ")[0]].as_("value_field"),
+				doctype[self.date_field],
+			)
+			.where(
+				(doctype.docstatus == 1)
+				& (doctype.company.isin(self.filters.company))
+				& (doctype[self.date_field].between(self.filters.from_date, self.filters.to_date))
+			)
+		)
 
 		# Add cost center filter if provided
 		if self.filters.get("cost_center"):
-			filters["cost_center"] = self.filters.cost_center
+			query = query.where(doctype.cost_center == self.filters.cost_center)
+
+		# Add additional filters if provided
+		if self.filters.get("additional_filters"):
+			additional_conditions = self.parse_additional_filters()
+			if additional_conditions:
+				# For multiple conditions, we need to handle OR logic properly
+				# frappe.qb supports OR through the | operator
+				if len(additional_conditions) == 1:
+					query = query.where(additional_conditions[0])
+				else:
+					# Combine conditions with OR
+					combined_condition = additional_conditions[0]
+					for condition in additional_conditions[1:]:
+						combined_condition = combined_condition | condition
+					query = query.where(combined_condition)
 
 		if self.filters.doc_type in ["Sales Invoice", "Purchase Invoice", "Payment Entry"]:
-			filters.update({"is_opening": "No"})
+			query = query.where(doctype.is_opening == "No")
 
-		self.entries = frappe.get_all(
-			self.filters.doc_type, fields=[entity, entity_name, value_field, self.date_field], filters=filters
-		)
+		self.entries = query.run(as_dict=True)
 
 		self.entity_names = {}
 		for d in self.entries:
 			self.entity_names.setdefault(d.entity, d.entity_name)
 
 	def get_sales_transactions_based_on_items(self):
-		if self.filters["value_quantity"] == "Value":
+		if self.filters.get("value_quantity") == "Value":
 			value_field = "base_net_amount"
 		else:
 			value_field = "stock_qty"
@@ -297,6 +366,21 @@ class Analytics:
 		if self.filters.get("cost_center"):
 			query = query.where(doctype.cost_center == self.filters.cost_center)
 
+		# Add additional filters if provided
+		if self.filters.get("additional_filters"):
+			additional_conditions = self.parse_additional_filters()
+			if additional_conditions:
+				# For multiple conditions, we need to handle OR logic properly
+				# frappe.qb supports OR through the | operator
+				if len(additional_conditions) == 1:
+					query = query.where(additional_conditions[0])
+				else:
+					# Combine conditions with OR
+					combined_condition = additional_conditions[0]
+					for condition in additional_conditions[1:]:
+						combined_condition = combined_condition | condition
+					query = query.where(combined_condition)
+
 		self.entries = query.run(as_dict=True)
 
 		self.entity_names = {}
@@ -304,7 +388,7 @@ class Analytics:
 			self.entity_names.setdefault(d.entity, d.entity_name)
 
 	def get_sales_transactions_based_on_customer_or_territory_group(self):
-		if self.filters["value_quantity"] == "Value":
+		if self.filters.get("value_quantity") == "Value":
 			value_field = "base_net_total as value_field"
 		else:
 			value_field = "total_qty as value_field"
@@ -317,28 +401,49 @@ class Analytics:
 		else:
 			entity_field = "territory as entity"
 
+		doctype = DocType(self.filters.doc_type)
+
+		query = (
+			frappe.qb.from_(doctype)
+			.select(
+				doctype[entity_field.split(" as ")[0]].as_("entity"),
+				doctype[value_field.split(" as ")[0]].as_("value_field"),
+				doctype[self.date_field],
+			)
+			.where(
+				(doctype.docstatus == 1)
+				& (doctype.company.isin(self.filters.company))
+				& (doctype[self.date_field].between(self.filters.from_date, self.filters.to_date))
+			)
+		)
+
 		# Add cost center filter if provided
 		if self.filters.get("cost_center"):
-			filters["cost_center"] = self.filters.cost_center
+			query = query.where(doctype.cost_center == self.filters.cost_center)
 
-		filters = {
-			"docstatus": 1,
-			"company": ["in", self.filters.company],
-			self.date_field: ("between", [self.filters.from_date, self.filters.to_date]),
-		}
+		# Add additional filters if provided
+		if self.filters.get("additional_filters"):
+			additional_conditions = self.parse_additional_filters()
+			if additional_conditions:
+				# For multiple conditions, we need to handle OR logic properly
+				# frappe.qb supports OR through the | operator
+				if len(additional_conditions) == 1:
+					query = query.where(additional_conditions[0])
+				else:
+					# Combine conditions with OR
+					combined_condition = additional_conditions[0]
+					for condition in additional_conditions[1:]:
+						combined_condition = combined_condition | condition
+					query = query.where(combined_condition)
 
 		if self.filters.doc_type in ["Sales Invoice", "Purchase Invoice", "Payment Entry"]:
-			filters.update({"is_opening": "No"})
+			query = query.where(doctype.is_opening == "No")
 
-		self.entries = frappe.get_all(
-			self.filters.doc_type,
-			fields=[entity_field, value_field, self.date_field],
-			filters=filters,
-		)
+		self.entries = query.run(as_dict=True)
 		self.get_groups()
 
 	def get_sales_transactions_based_on_item_group(self):
-		if self.filters["value_quantity"] == "Value":
+		if self.filters.get("value_quantity") == "Value":
 			value_field = "base_net_amount"
 		else:
 			value_field = "qty"
@@ -366,38 +471,77 @@ class Analytics:
 		if self.filters.get("cost_center"):
 			query = query.where(doctype.cost_center == self.filters.cost_center)
 
+		# Add additional filters if provided
+		if self.filters.get("additional_filters"):
+			additional_conditions = self.parse_additional_filters()
+			if additional_conditions:
+				# For multiple conditions, we need to handle OR logic properly
+				# frappe.qb supports OR through the | operator
+				if len(additional_conditions) == 1:
+					query = query.where(additional_conditions[0])
+				else:
+					# Combine conditions with OR
+					combined_condition = additional_conditions[0]
+					for condition in additional_conditions[1:]:
+						combined_condition = combined_condition | condition
+					query = query.where(combined_condition)
+
 		self.entries = query.run(as_dict=True)
 
 		self.get_groups()
 
 	def get_sales_transactions_based_on_project(self):
-		if self.filters["value_quantity"] == "Value":
+		if self.filters.get("value_quantity") == "Value":
 			value_field = "base_net_total as value_field"
 		else:
 			value_field = "total_qty as value_field"
 
 		if self.filters.doc_type == "Payment Entry":
-			value_field = "base_received_amount as value_field"
+			if self.filters.tree_type == "Customer":
+				value_field = "base_received_amount as value_field"
+			else:
+				value_field = "base_paid_amount as value_field"
 
-		entity = "project as entity"
+		doctype = DocType(self.filters.doc_type)
 
-		filters = {
-			"docstatus": 1,
-			"company": ["in", self.filters.company],
-			"project": ["!=", ""],
-			self.date_field: ("between", [self.filters.from_date, self.filters.to_date]),
-		}
+		query = (
+			frappe.qb.from_(doctype)
+			.select(
+				doctype.project.as_("entity"),
+				doctype[value_field.split(" as ")[0]].as_("value_field"),
+				doctype[self.date_field],
+			)
+			.where(
+				(doctype.docstatus == 1)
+				& (doctype.company.isin(self.filters.company))
+				& (doctype.project != "")
+				& (doctype[self.date_field].between(self.filters.from_date, self.filters.to_date))
+			)
+		)
 
 		# Add cost center filter if provided
 		if self.filters.get("cost_center"):
-			filters["cost_center"] = self.filters.cost_center
+			query = query.where(doctype.cost_center == self.filters.cost_center)
+
+		# Add additional filters if provided
+		if self.filters.get("additional_filters"):
+			additional_conditions = self.parse_additional_filters()
+			if additional_conditions:
+				# For multiple conditions, we need to handle OR logic properly
+				# frappe.qb supports OR through the | operator
+				if len(additional_conditions) == 1:
+					query = query.where(additional_conditions[0])
+				else:
+					# Combine conditions with OR
+					combined_condition = additional_conditions[0]
+					for condition in additional_conditions[1:]:
+						combined_condition = combined_condition | condition
+					query = query.where(combined_condition)
 
 		if self.filters.doc_type in ["Sales Invoice", "Purchase Invoice", "Payment Entry"]:
-			filters.update({"is_opening": "No"})
+			query = query.where(doctype.is_opening == "No")
 
-		self.entries = frappe.get_all(
-			self.filters.doc_type, fields=[entity, value_field, self.date_field], filters=filters
-		)
+		self.entries = query.run(as_dict=True)
 
 	def get_rows(self):
 		self.data = []
@@ -546,6 +690,93 @@ class Analytics:
 			frappe.db.sql(""" select name, supplier_group from `tabSupplier`""")
 		)
 
+	def parse_additional_filters(self):
+		"""Parse additional filters string into frappe.qb conditions"""
+		if not self.filters.get("additional_filters"):
+			return []
+
+		filter_string = self.filters.additional_filters.strip()
+		if not filter_string:
+			return []
+
+		conditions = []
+		# Split by AND/OR operators (case insensitive)
+		import re
+		parts = re.split(r'\s+(and|or)\s+', filter_string, flags=re.IGNORECASE)
+
+		i = 0
+		while i < len(parts):
+			part = parts[i].strip()
+			if part.lower() in ['and', 'or']:
+				i += 1
+				continue
+
+			# Parse individual condition
+			condition = self.parse_single_condition(part)
+			if condition:
+				conditions.append(condition)
+			i += 1
+
+		# Debug: Print parsed conditions
+		# frappe.msgprint(f"Parsed {len(conditions)} conditions from filter: {filter_string}")
+		# for idx, cond in enumerate(conditions):
+		# 	frappe.msgprint(f"Condition {idx+1}: {cond}")
+
+		return conditions
+
+	def parse_single_condition(self, condition_str):
+		"""Parse a single condition like 'cost_center != "Main Cost Center"'"""
+		import re
+
+		# Match patterns like field operator value
+		pattern = r'^(\w+)\s*([!=<>]+|like|not like|in|not in)\s*(.+)$'
+		match = re.match(pattern, condition_str.strip(), re.IGNORECASE)
+
+		if not match:
+			return None
+
+		field, operator, value = match.groups()
+		field = field.strip()
+		operator = operator.strip().lower()
+		value = value.strip()
+
+		# Handle quoted values
+		if value.startswith('"') and value.endswith('"'):
+			value = value[1:-1]
+		elif value.startswith("'") and value.endswith("'"):
+			value = value[1:-1]
+
+		# Map operators to frappe.qb operators
+		doctype = DocType(self.filters.doc_type)
+		field_obj = doctype[field]
+
+		if operator == '==':
+			return field_obj == value
+		elif operator == '!=':
+			return field_obj != value
+		elif operator == '<':
+			return field_obj < value
+		elif operator == '<=':
+			return field_obj <= value
+		elif operator == '>':
+			return field_obj > value
+		elif operator == '>=':
+			return field_obj >= value
+		elif operator == 'like':
+			return field_obj.like(value)
+		elif operator == 'not like':
+			return field_obj.not_like(value)
+		elif operator == 'in':
+			# Parse comma-separated values
+			values = [v.strip().strip('"\'') for v in value.split(',')]
+			return field_obj.isin(values)
+		elif operator == 'not in':
+			# Parse comma-separated values
+			values = [v.strip().strip('"\'') for v in value.split(',')]
+			return field_obj.notin(values)
+
+		return None
+
 	def get_chart_data(self):
 		length = len(self.columns)
 
@@ -580,10 +811,24 @@ class Analytics:
 						datasets[0]["name"] = _("Total")
 				else:
 					datasets.append(data)
+		else:
+			# When curves is "select", show all data by default
+			for curve in self.data[:10]:  # Show top 10 entries
+				data = {
+					"name": curve.get("entity_name", curve["entity"]),
+					"values": [curve[scrub(label)] for label in labels],
+				}
+				if sum(data["values"]) > 0:  # Only include if there's actual data
+					datasets.append(data)
 
-		self.chart = {"data": {"labels": labels, "datasets": datasets}, "type": "line"}
+		# Remove the fallback logic since we now handle "select" curves properly above
 
-		if self.filters["value_quantity"] == "Value":
+		# Get chart type from filters, default to line
+		chart_type = self.filters.get("chart_type", "line")
+
+		self.chart = {"data": {"labels": labels, "datasets": datasets}, "type": chart_type}
+
+		if self.filters.get("value_quantity") == "Value":
 			self.chart["fieldtype"] = "Currency"
 		else:
 			self.chart["fieldtype"] = "Float"
