@@ -31,26 +31,32 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for(var i=0, l=data.length; i<l; i++) { %}
-				<tr style="border-bottom: 1px solid black">
-					<td style="text-align: center; border: 1px dotted black">
-						{%= data[i].entity %}
-					</td>
-					{% if (filters.tree_type == "Customer" || filters.tree_type == "Supplier" || filters.tree_type == "Item") { %}
-						<td style="border-right: 1px dotted black">
-							{%= data[i].entity_name || "" %}
+			{% if data %}
+				{% for item in data %}
+					<tr style="border-bottom: 1px solid black">
+						<td style="text-align: center; border: 1px dotted black">
+							{%= item.entity %}
 						</td>
-					{% } %}
-					{% if (filters.tree_type == "Item") { %}
-						<td style="border-right: 1px dotted black">
-							{%= data[i].stock_uom || "" %}
+						{% if (filters.tree_type == "Customer" || filters.tree_type == "Supplier" || filters.tree_type == "Item") { %}
+							<td style="border-right: 1px dotted black">
+								{%= item.entity_name or "" %}
+							</td>
+						{% } %}
+						{% if (filters.tree_type == "Item") { %}
+							<td style="border-right: 1px dotted black">
+								{%= item.stock_uom or "" %}
+							</td>
+						{% } %}
+						<td style="text-align: right; border-right: 1px dotted black">
+							{%= format_currency(item.total, "SAR") %}
 						</td>
-					{% } %}
-					<td style="text-align: right; border-right: 1px dotted black">
-						{%= format_currency(data[i].total, "SAR") %}
-					</td>
+					</tr>
+				{% endfor %}
+			{% else %}
+				<tr>
+					<td colspan="4" style="text-align: center;">{%= __("No data available") %}</td>
 				</tr>
-			{% endfor%}
+			{% endif %}
 		</tbody>
 	</table>
 	<p class="text-right text-muted">{%= __("Printed on {0}", [frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string())]) %}</p>

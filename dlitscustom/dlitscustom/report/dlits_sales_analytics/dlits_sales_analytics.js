@@ -136,15 +136,9 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 			default: "cost_center != 'Tax Filing - ATE' OR cost_center != 'XT-EXP - ATE'",
 			css_class: "additional-filters-compact",
 		},
-		// {
-		// 	fieldname: "additional_filters_help",
-		// 	label: __("Additional Filters Help"),
-		// 	fieldtype: "HTML",
-		// 	options: `<div>How to use Additional Filters:<br> cost_center != 'Tax Filing - ATE'<br>• customer_group == 'VIP'<br>Supported operators:</strong> ==, !=, <, <=, >, >=, like, not like, in, not in<br>Combine conditions: Use AND/OR to combine multiple conditions</div>`,
-		// },
 	],
+	
 	onload: function(report) {
-		// Apply custom CSS to make the additional filters field more compact
 		setTimeout(() => {
 			const additionalFiltersField = $(`[data-fieldname="additional_filters"] textarea`);
 			if (additionalFiltersField.length) {
@@ -157,8 +151,185 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 				});
 			}
 		}, 100);
+		
+		this.hide_chart_tooltips();
+		this.setup_chart_labels();
 	},
+	
+	hide_chart_tooltips: function() {
+		const style = document.createElement('style');
+		style.textContent = `
+			.chart-container .graph-svg-tip { display: none !important; }
+			.chart-container .data-point-indicator { display: none !important; }
+		`;
+		document.head.appendChild(style);
+	},
+	
+	format_value_plain: function(value, isCurrency) {
+		// Format number without currency symbol
+		const formatted = parseFloat(value).toLocaleString('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+		return formatted;
+	},
+	
+	setup_chart_labels: function() {
+		const self = this;
+		
+		let attempts = 0;
+		const checkInterval = setInterval(() => {
+			attempts++;
+			
+			const svg = document.querySelector('.chart-container svg');
+			if (svg && frappe.query_report.chart && frappe.query_report.chart.data) {
+				clearInterval(checkInterval);
+				console.log('✓ Chart found, adding labels');
+				
+				setTimeout(() => {
+					self.add_permanent_labels();
+					self.maintain_labels();
+				}, 500);
+			}
+			
+			if (attempts > 50) {
+				clearInterval(checkInterval);
+			}
+		}, 200);
+	},
+	
+	add_permanent_labels: function() {
+		const chartType = frappe.query_report.get_filter_value('chart_type');
+		if (chartType !== 'bar') return;
+		
+		const svg = document.querySelector('.chart-container svg');
+		if (!svg) return;
+		
+		// Remove existing labels
+		svg.querySelectorAll('.permanent-value-label, .permanent-value-bg, .permanent-value-shadow').forEach(el => el.remove());
+		
+		const valueQuantity = frappe.query_report.get_filter_value('value_quantity');
+		const isCurrency = valueQuantity === 'Value';
+		
+		const chartData = frappe.query_report.chart.data;
+		if (!chartData || !chartData.datasets || !chartData.datasets[0]) return;
+		
+		const values = chartData.datasets[0].values;
+		const bars = svg.querySelectorAll('.dataset-units rect, .dataset-units path');
+		
+		console.log(`Creating perfectly centered labels for ${bars.length} bars`);
+		
+		let labelsCreated = 0;
+		
+		bars.forEach((bar, index) => {
+			if (index >= values.length) return;
+			
+			const value = values[index];
+			if (!value || parseFloat(value) === 0) return;
+			
+			// Get bar bounding box - use getBBox() for accurate positioning
+			const bbox = bar.getBBox();
+			
+			// Calculate true center of the bar
+			const barCenterX = bbox.x + (bbox.width / 2);
+			const barTop = bbox.y;
+			
+			// Format value (without currency)
+			const formattedValue = this.format_value_plain(value, isCurrency);
+			
+			// Create temporary text to measure exact width
+			const tempText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			tempText.setAttribute('font-size', '11');
+			tempText.setAttribute('font-weight', 'bold');
+			tempText.setAttribute('font-family', 'Arial, sans-serif');
+			tempText.textContent = formattedValue;
+			tempText.setAttribute('visibility', 'hidden');
+			svg.appendChild(tempText);
+			
+			// Get exact text dimensions
+			const textBBox = tempText.getBBox();
+			const textWidth = textBBox.width;
+			
+			// Remove temporary text
+			svg.removeChild(tempText);
+			
+			// Calculate background dimensions
+			const padding = 8;
+			const bgWidth = textWidth + (padding * 2);
+			const bgHeight = 22;
+			
+			// Calculate positions - centered on the bar
+			const bgX = barCenterX - (bgWidth / 2);
+			const bgY = barTop - bgHeight - 8;
+			
+			// Add subtle drop shadow
+			const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			shadow.setAttribute('class', 'permanent-value-shadow');
+			shadow.setAttribute('x', bgX + 1);
+			shadow.setAttribute('y', bgY + 1);
+			shadow.setAttribute('width', bgWidth);
+			shadow.setAttribute('height', bgHeight);
+			shadow.setAttribute('fill', 'rgba(0, 0, 0, 0.3)');
+			shadow.setAttribute('rx', '4');
+			shadow.setAttribute('ry', '4');
+			svg.appendChild(shadow);
+			
+			// Create background rectangle
+			const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			bg.setAttribute('class', 'permanent-value-bg');
+			bg.setAttribute('x', bgX + 50);
+			bg.setAttribute('y', bgY);
+			bg.setAttribute('width', bgWidth);
+			bg.setAttribute('height', bgHeight);
+			bg.setAttribute('fill', 'rgba(0, 0, 0, 0.75)');
+			bg.setAttribute('rx', '4');
+			bg.setAttribute('ry', '4');
+			svg.appendChild(bg);
+			
+			// Create text - centered both horizontally and vertically
+			const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			text.setAttribute('class', 'permanent-value-label');
+			text.setAttribute('x', barCenterX + 50);
+			text.setAttribute('y', bgY + (bgHeight / 2));
+			text.setAttribute('text-anchor', 'middle');
+			text.setAttribute('dominant-baseline', 'central');
+			text.setAttribute('font-size', '11');
+			text.setAttribute('font-weight', 'bold');
+			text.setAttribute('font-family', 'Arial, sans-serif');
+			text.setAttribute('fill', '#ffffff');
+			text.textContent = formattedValue;
+			svg.appendChild(text);
+			
+			labelsCreated++;
+			
+			// Debug log
+			console.log(`Bar ${index}: bbox.x=${bbox.x.toFixed(2)}, bbox.width=${bbox.width.toFixed(2)}, centerX=${barCenterX.toFixed(2)}, value=${formattedValue}`);
+		});
+		
+		console.log(`✓ Created ${labelsCreated} perfectly centered labels`);
+	},
+	
+	maintain_labels: function() {
+		const self = this;
+		
+		// Re-add labels if they disappear
+		setInterval(() => {
+			const chartType = frappe.query_report.get_filter_value('chart_type');
+			if (chartType !== 'bar') return;
+			
+			const svg = document.querySelector('.chart-container svg');
+			if (!svg) return;
+			
+			const labels = svg.querySelectorAll('.permanent-value-label');
+			if (labels.length === 0 && frappe.query_report.chart && frappe.query_report.chart.data) {
+				console.log('Labels missing, re-adding...');
+				self.add_permanent_labels();
+			}
+		}, 1000);
+	},
+	
 	get_datatable_options(options) {
+		const self = this;
 		return Object.assign(options, {
 			checkboxColumn: true,
 			events: {
@@ -197,6 +368,8 @@ frappe.query_reports["DLITS Sales Analytics"] = {
 					frappe.query_report.render_chart(new_options);
 
 					frappe.query_report.raw_chart_data = new_data;
+					
+					setTimeout(() => self.add_permanent_labels(), 700);
 				},
 			},
 		});

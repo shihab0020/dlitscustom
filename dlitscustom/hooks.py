@@ -12,7 +12,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/dlitscustom/css/dlitscustom.css"
-# app_include_js = "/assets/dlitscustom/js/dlitscustom.js"
+# app_include_js = "/assets/dlitscustom/js/chartjs-plugin-datalabels.min.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/dlitscustom/css/dlitscustom.css"

@@ -777,6 +777,7 @@ class Analytics:
 
 		return None
 
+
 	def get_chart_data(self):
 		length = len(self.columns)
 
@@ -821,12 +822,15 @@ class Analytics:
 				if sum(data["values"]) > 0:  # Only include if there's actual data
 					datasets.append(data)
 
-		# Remove the fallback logic since we now handle "select" curves properly above
-
 		# Get chart type from filters, default to line
 		chart_type = self.filters.get("chart_type", "line")
 
-		self.chart = {"data": {"labels": labels, "datasets": datasets}, "type": chart_type}
+		# Build chart configuration
+		self.chart = {
+			"data": {"labels": labels, "datasets": datasets},
+			"type": chart_type,
+			"chart_options": {}  # Add chart_options key for JS to populate
+		}
 
 		if self.filters.get("value_quantity") == "Value":
 			self.chart["fieldtype"] = "Currency"
