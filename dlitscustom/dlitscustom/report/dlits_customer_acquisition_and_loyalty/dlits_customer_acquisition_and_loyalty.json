@@ -1,0 +1,49 @@
+{
+ "add_total_row": 1,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2026-04-04 20:09:24.967272",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 3,
+ "is_standard": "Yes",
+ "letter_head": null,
+ "modified": "2026-04-08 09:53:43.460370",
+ "modified_by": "Administrator",
+ "module": "dlitscustom",
+ "name": "Dlits Customer Acquisition and Loyalty",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Customer",
+ "report_name": "Dlits Customer Acquisition and Loyalty",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Sales Master Manager"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Sales Invoice DL"
+  }
+ ],
+ "timeout": 0
+}
