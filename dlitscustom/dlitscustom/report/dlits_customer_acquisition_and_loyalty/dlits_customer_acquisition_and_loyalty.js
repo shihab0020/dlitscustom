@@ -53,13 +53,22 @@ frappe.query_reports["Dlits Customer Acquisition and Loyalty"] = {
             const customer_names = data[list_field];
             
             if (customer_names) {
-                return `<div class="customer-drilldown-trigger" 
-                             data-names="${customer_names}" 
-                             data-label="${column.label}" 
-                             data-period="${data.month}"
-                             style="color: #2196F3; font-weight: bold; cursor: pointer; text-decoration: underline;">
-                             ${value}
-                        </div>`;
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="customer-drilldown-trigger" 
+                              data-names="${customer_names}" 
+                              data-label="${column.label}" 
+                              data-period="${data.month}"
+                              style="color: #2196F3; font-weight: bold; cursor: pointer; text-decoration: underline;">
+                              ${value}
+                        </span>
+                        <a class="customer-list-link" 
+                           data-names="${customer_names}" 
+                           title="${__('Open in Customer List')}"
+                           style="margin-left: 8px; cursor: pointer; color: #888;">
+                           <i class="fa fa-external-link" style="font-size: 12px;"></i>
+                        </a>
+                    </div>`;
             }
         }
         return value;
@@ -68,11 +77,12 @@ frappe.query_reports["Dlits Customer Acquisition and Loyalty"] = {
     onload: function (report) {
         const self = this;
         
-        // Clean up previous listeners to prevent memory leaks or double-firing
+        // Clean up listeners
         $(report.page.main).off("click", ".customer-drilldown-trigger");
+        $(report.page.main).off("click", ".customer-list-link");
         $(document).off("click", ".route-link");
 
-        // Listener for the grid links
+        // Existing listener for the small table popup
         $(report.page.main).on("click", ".customer-drilldown-trigger", function (e) {
             e.preventDefault();
             const names_str = $(this).attr("data-names");
@@ -84,7 +94,20 @@ frappe.query_reports["Dlits Customer Acquisition and Loyalty"] = {
             }
         });
 
-        // Listener for customer links inside the popup dialog
+        // NEW: Listener to open standard Customer List with filters
+        $(report.page.main).on("click", ".customer-list-link", function (e) {
+            e.preventDefault();
+            const names_str = $(this).attr("data-names");
+            if (names_str) {
+                const names = names_str.split("||");
+                
+                // Redirects to Customer List using the "name in [list]" filter
+                frappe.set_route("List", "Customer", {
+                    "name": ["in", names]
+                });
+            }
+        });
+
         $(document).on("click", ".route-link", function(e) {
             e.preventDefault();
             frappe.set_route("Form", $(this).data("doctype"), $(this).data("name"));
