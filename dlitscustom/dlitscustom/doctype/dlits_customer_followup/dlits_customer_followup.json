@@ -1,0 +1,67 @@
+{
+  "actions": [],
+  "autoname": "format:CF-{YYYY}-{MM}-{#####}",
+  "creation": "2026-04-12 18:00:00.000000",
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "fields": [
+
+    {"fieldname": "section_task", "fieldtype": "Section Break", "label": "Followup Task"},
+    {"fieldname": "customer", "fieldtype": "Link", "in_list_view": 1, "in_standard_filter": 1, "label": "Customer", "options": "Customer", "reqd": 1},
+    {"fieldname": "task_title", "fieldtype": "Data", "in_list_view": 1, "label": "Task Title", "reqd": 1, "bold": 1},
+    {"fieldname": "column_task_2", "fieldtype": "Column Break"},
+    {"default": "__user", "fieldname": "owned_by", "fieldtype": "Link", "in_list_view": 1, "in_standard_filter": 1, "label": "Task Owner", "options": "User", "reqd": 1},
+    {"fieldname": "assigned_to", "fieldtype": "Link", "in_standard_filter": 1, "label": "Assigned To", "options": "User"},
+
+    {"fieldname": "section_quick_info", "fieldtype": "Section Break", "label": "Quick Info"},
+    {"default": "Attempting Contact", "fieldname": "task_status", "fieldtype": "Select", "in_list_view": 1, "in_standard_filter": 1, "label": "Status", "options": "Attempting Contact\nContacted\nNo Response\nNeeds Follow-up\nInformation Sent\nMeeting Scheduled\nDemo Scheduled\nRequirement Gathering\nProposal Preparing\nProposal Sent\nNegotiation\nWaiting Customer Decision\nOn Hold\nFollow-up Later\nFuture Opportunity\nLost to Competitor\nNo Budget\nNot Interested\nWrong Contact\nProject Cancelled\nNo Response (Closed)\nCompleted\nCancelled", "reqd": 1},
+    {"default": "Medium", "fieldname": "priority", "fieldtype": "Select", "in_list_view": 1, "in_standard_filter": 1, "label": "Priority", "options": "Low\nMedium\nHigh\nUrgent"},
+    {"fieldname": "is_payment_followup", "fieldtype": "Check", "in_list_view": 1, "in_standard_filter": 1, "label": "Payment Follow-up", "default": "0"},
+    {"fieldname": "column_quick_2", "fieldtype": "Column Break"},
+    {"fieldname": "contact_person", "fieldtype": "Link", "label": "Contact Person", "options": "Contact"},
+    {"fieldname": "next_followup_date", "fieldtype": "Date", "in_list_view": 1, "in_standard_filter": 1, "label": "Next Scheduled"},
+
+    {"fieldname": "section_updates", "fieldtype": "Section Break", "label": "Followup Updates"},
+    {"fieldname": "followup_updates", "fieldtype": "Table", "label": "Updates", "options": "Dlits Followup Update"},
+
+    {"fieldname": "section_references", "fieldtype": "Section Break", "label": "Linked Documents"},
+    {"fieldname": "total_linked_balance", "fieldtype": "Currency", "label": "Total Linked Balance", "read_only": 1, "bold": 1, "description": "Sum of outstanding balance from all linked documents"},
+    {"fieldname": "linked_documents", "fieldtype": "Table", "label": "Documents", "options": "Dlits Followup Linked Document"},
+
+    {"fieldname": "section_payment", "fieldtype": "Section Break", "label": "Payment Details", "depends_on": "eval:doc.is_payment_followup==1"},
+    {"fieldname": "total_outstanding", "fieldtype": "Currency", "label": "Total Outstanding", "read_only": 1, "in_standard_filter": 1, "description": "Customer total outstanding invoices"},
+    {"fieldname": "agreed_payment_amount", "fieldtype": "Currency", "in_list_view": 0, "in_standard_filter": 1, "label": "Agreed Payment"},
+    {"fieldname": "column_payment_2", "fieldtype": "Column Break"},
+    {"fieldname": "payment_followup_notes", "fieldtype": "Small Text", "label": "Payment Notes"},
+    {"fieldname": "payment_invoices_html", "fieldtype": "HTML", "label": "Outstanding Invoices"},
+
+    {"fieldname": "section_objective", "fieldtype": "Section Break", "label": "Objective & Notes", "collapsible": 1},
+    {"fieldname": "objective", "fieldtype": "Small Text", "label": "Objective"},
+    {"fieldname": "column_objective_2", "fieldtype": "Column Break"},
+    {"fieldname": "internal_notes", "fieldtype": "Small Text", "label": "Internal Notes"},
+
+    {"fieldname": "section_stats", "fieldtype": "Section Break", "label": "Statistics", "collapsible": 1},
+    {"fieldname": "last_contact_date", "fieldtype": "Date", "in_list_view": 1, "in_standard_filter": 1, "label": "Last Contact", "read_only": 1},
+    {"fieldname": "total_interactions", "fieldtype": "Int", "in_list_view": 1, "in_standard_filter": 1, "label": "Updates", "read_only": 1, "default": "0"},
+    {"fieldname": "last_outcome", "fieldtype": "Select", "in_list_view": 1, "in_standard_filter": 1, "label": "Last Outcome", "read_only": 1, "options": "\nPositive\nNeutral\nNegative\nNeeds Followup"},
+    {"fieldname": "column_stats_2", "fieldtype": "Column Break"},
+    {"description": "Days since last contact", "fieldname": "aging_days", "fieldtype": "Int", "in_list_view": 1, "label": "Aging (Days)", "read_only": 1},
+
+    {"fieldname": "section_participants", "fieldtype": "Section Break", "label": "Other Participants", "collapsible": 1},
+    {"fieldname": "participants", "fieldtype": "Table", "label": "Participants", "options": "Dlits Followup Participant"}
+  ],
+  "index_web_pages_for_search": 1,
+  "modified": "2026-04-15 16:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "dlitscustom",
+  "name": "Dlits Customer Followup",
+  "owner": "Administrator",
+  "permissions": [
+    {"create": 1, "delete": 1, "read": 1, "role": "System Manager", "write": 1},
+    {"create": 1, "read": 1, "role": "Sales User", "write": 1}
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "track_changes": 1
+}

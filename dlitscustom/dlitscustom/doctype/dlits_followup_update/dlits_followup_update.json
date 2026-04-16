@@ -1,0 +1,107 @@
+{
+    "actions": [],
+    "creation": "2026-04-14 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "istable": 1,
+    "fields": [
+      {
+        "fieldname": "update_date",
+        "fieldtype": "Datetime",
+        "label": "Date & Time",
+        "in_list_view": 1,
+        "reqd": 1,
+        "default": "Now",
+        "columns": 2
+      },
+      {
+        "fieldname": "followup_type",
+        "fieldtype": "Select",
+        "label": "Type",
+        "options": "Phone Call\nEmail\nMeeting\nWhatsApp\nSMS\nVideo Call",
+        "in_list_view": 1,
+        "default": "Phone Call",
+        "reqd": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "column_break_1",
+        "fieldtype": "Column Break"
+      },
+      {
+        "fieldname": "contacted_by",
+        "fieldtype": "Link",
+        "label": "Contacted By",
+        "options": "User",
+        "in_list_view": 1,
+        "default": "__user",
+        "columns": 2
+      },
+      {
+        "fieldname": "duration_minutes",
+        "fieldtype": "Int",
+        "label": "Duration (Min)",
+        "in_list_view": 1,
+        "columns": 1
+      },
+      {
+        "fieldname": "section_details",
+        "fieldtype": "Section Break",
+        "label": "Details"
+      },
+      {
+        "fieldname": "discussion_summary",
+        "fieldtype": "Small Text",
+        "label": "Discussion Summary",
+        "in_list_view": 1,
+        "reqd": 1,
+        "columns": 3
+      },
+      {
+        "fieldname": "column_break_2",
+        "fieldtype": "Column Break"
+      },
+      {
+        "fieldname": "status",
+        "fieldtype": "Select",
+        "label": "Status",
+        "options": "Attempted\nSpoke\nAnswered\nLeft Message\nNo Answer\nEmail Sent",
+        "default": "Attempted",
+        "in_list_view": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "outcome",
+        "fieldtype": "Select",
+        "label": "Outcome",
+        "options": "\nPositive\nNeutral\nNegative\nNeeds Followup",
+        "in_list_view": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "next_action",
+        "fieldtype": "Data",
+        "label": "Next Action",
+        "in_list_view": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "agreed_payment_amount",
+        "fieldtype": "Currency",
+        "label": "Agreed Payment Amt",
+        "in_list_view": 0,
+        "columns": 2
+      }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-04-15 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "dlitscustom",
+    "name": "Dlits Followup Update",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC"
+  }

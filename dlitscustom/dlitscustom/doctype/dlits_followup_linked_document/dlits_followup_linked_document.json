@@ -1,0 +1,69 @@
+{
+    "actions": [],
+    "creation": "2026-04-14 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "istable": 1,
+    "fields": [
+      {
+        "fieldname": "document_type",
+        "fieldtype": "Select",
+        "label": "Document Type",
+        "options": "Quotation\nSales Order\nSales Invoice\nDelivery Note\nPayment Entry\nOpportunity",
+        "in_list_view": 1,
+        "reqd": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "document_name",
+        "fieldtype": "Dynamic Link",
+        "label": "Document ID",
+        "options": "document_type",
+        "in_list_view": 1,
+        "reqd": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "amount",
+        "fieldtype": "Currency",
+        "label": "Amount",
+        "in_list_view": 1,
+        "read_only": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "paid_amount",
+        "fieldtype": "Currency",
+        "label": "Paid",
+        "in_list_view": 1,
+        "read_only": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "balance_amount",
+        "fieldtype": "Currency",
+        "label": "Balance",
+        "in_list_view": 1,
+        "read_only": 1,
+        "columns": 2
+      },
+      {
+        "fieldname": "remarks",
+        "fieldtype": "Data",
+        "label": "Remarks",
+        "in_list_view": 1,
+        "columns": 2
+      }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-04-15 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "dlitscustom",
+    "name": "Dlits Followup Linked Document",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC"
+  }

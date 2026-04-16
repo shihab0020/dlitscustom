@@ -9,7 +9,8 @@ app_license = "mit"
 
 # Includes in <head>
 # ------------------
-
+# Add to hooks.py
+# app_include_css = "/assets/dlitscustom/css/dlits_customer_followup.css"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/dlitscustom/css/dlitscustom.css"
 # app_include_js = "/assets/dlitscustom/js/chartjs-plugin-datalabels.min.js"
@@ -34,8 +35,16 @@ doctype_js = {
     "Sales Order": "public/js/sales_order_pricing_rule_dlits.js",
     "Sales Invoice": "public/js/sales_invoice_pricing_rule_dlits.js",
     "Payment Entry": "public/js/payment_entry_dlits.js",
-    "Journal Entry": "public/js/journal_entry_dlits.js"
+    "Journal Entry": "public/js/journal_entry_dlits.js",
+    "Customer": "public/js/customer.js",
+    "Quotation": "public/js/quotation.js"
 }
+
+# Customer Followup related document events
+# doctype_js = {
+#     "Dlits Customer Followup": "public/js/dlits_customer_followup.js",
+#     "Customer": "public/js/customer.js"
+# }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -141,12 +150,26 @@ doc_events = {
     },
     "Quotation": {
         "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
-    },
+    }
+    # "Customer": {
+    #     "on_update": "dlitscustom.dlitscustom.doctype.dlits_customer_followup.dlits_customer_followup.update_customer_aging"
+    # }
 }
 
 fixtures = [
     {"doctype": "Property Setter"},
-    {"doctype": "DocType", "filters": [["name", "in", ["Pricing Rule Item Code Dlits Test"]]]}
+    {"doctype": "DocType", "filters": [["name", "in", ["Pricing Rule Item Code Dlits Test"]]]},
+    {
+        "dt": "Custom Field",
+        "filters": [
+            ["dt", "=", "Customer"],
+            ["fieldname", "in", [
+                "custom_last_followup_status", 
+                "custom_last_followup_date", 
+                "custom_followup_aging"
+            ]]
+        ]
+    }
 ]
 
 # Scheduled Tasks
@@ -170,6 +193,13 @@ fixtures = [
 # 	],
 # }
 
+# Scheduled Tasks for customer followup aging and reminders
+scheduler_events = {
+    "daily": [
+        "dlitscustom.dlitscustom.doctype.dlits_customer_followup.dlits_customer_followup.update_customer_aging",
+        "dlitscustom.dlitscustom.doctype.dlits_customer_followup.dlits_customer_followup.send_followup_reminders"
+    ]
+}
 # Testing
 # -------
 
