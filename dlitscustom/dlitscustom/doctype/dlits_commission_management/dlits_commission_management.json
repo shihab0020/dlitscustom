@@ -1,0 +1,282 @@
+{
+ "actions": [],
+ "autoname": "custom",
+ "creation": "2026-04-17 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sales_partner",
+  "commission_rate",
+  "status",
+  "col_break_header",
+  "from_date",
+  "to_date",
+  "section_filters",
+  "cost_center",
+  "brand",
+  "col_break_filters",
+  "item",
+  "target_amount",
+  "avoid_draft_invoices",
+  "avoid_non_paid_invoices",
+  "avoid_partial_paid",
+  "deduct_return",
+  "col_break_filter_checks",
+  "service_cost_percentage",
+  "section_invoices",
+  "invoices",
+  "section_totals",
+  "total_net_amount",
+  "total_gross_amount",
+  "col_break_totals",
+  "total_profit",
+  "total_commission",
+  "section_payment",
+  "payments",
+  "col_break_payment",
+  "total_paid",
+  "balance_commission",
+  "accountant_note",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "sales_partner",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Dlits Sales Partner",
+   "options": "Dlits Sales Partner",
+   "reqd": 1
+  },
+  {
+   "fieldname": "commission_rate",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Commission Rate (%)",
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nCalculated\nRequested for Approval\nApproved\nPaid",
+   "read_only": 0
+  },
+  {
+   "fieldname": "col_break_header",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_filters",
+   "fieldtype": "Section Break",
+   "label": "Optional Filters"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "brand",
+   "fieldtype": "Link",
+   "label": "Brand",
+   "options": "Brand"
+  },
+  {
+   "fieldname": "col_break_filters",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "target_amount",
+   "fieldtype": "Currency",
+   "label": "Target Amount"
+  },
+  {
+   "fieldname": "col_break_filter_checks",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "75",
+   "description": "For service items (no stock valuation), estimated cost as % of net amount. Stock items use actual valuation rate.",
+   "fieldname": "service_cost_percentage",
+   "fieldtype": "Percent",
+   "label": "Service Cost % (for profit estimation)"
+  },
+  {
+   "default": "1",
+   "fieldname": "avoid_draft_invoices",
+   "fieldtype": "Check",
+   "label": "Exclude Draft Invoices"
+  },
+  {
+   "default": "1",
+   "description": "Deduct any sales return amounts from commission base (regardless of payment status)",
+   "fieldname": "deduct_return",
+   "fieldtype": "Check",
+   "label": "Deduct Returns"
+  },
+  {
+   "default": "1",
+   "fieldname": "avoid_non_paid_invoices",
+   "fieldtype": "Check",
+   "label": "Exclude Fully Unpaid Invoices"
+  },
+  {
+   "default": "1",
+   "fieldname": "avoid_partial_paid",
+   "fieldtype": "Check",
+   "label": "Exclude Partially Paid Invoices"
+  },
+  {
+   "fieldname": "section_invoices",
+   "fieldtype": "Section Break",
+   "label": "Commission Invoices"
+  },
+  {
+   "fieldname": "invoices",
+   "fieldtype": "Table",
+   "label": "Invoices",
+   "options": "Dlits Commission Invoice"
+  },
+  {
+   "fieldname": "section_totals",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "total_net_amount",
+   "fieldtype": "Currency",
+   "label": "Total Net Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_gross_amount",
+   "fieldtype": "Currency",
+   "label": "Total Gross Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_profit",
+   "fieldtype": "Currency",
+   "label": "Total Profit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_commission",
+   "fieldtype": "Currency",
+   "label": "Total Payable Commission",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_payment",
+   "fieldtype": "Section Break",
+   "label": "Payment Details"
+  },
+  {
+   "fieldname": "payments",
+   "fieldtype": "Table",
+   "label": "Payment Entries",
+   "options": "Dlits Commission Payment"
+  },
+  {
+   "fieldname": "col_break_payment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_paid",
+   "fieldtype": "Currency",
+   "label": "Total Paid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "balance_commission",
+   "fieldtype": "Currency",
+   "label": "Balance Payable",
+   "read_only": 1
+  },
+  {
+   "fieldname": "accountant_note",
+   "fieldtype": "Small Text",
+   "label": "Accountant Note"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Dlits Commission Management",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-04-17 00:00:00",
+ "modified_by": "Administrator",
+ "module": "dlitscustom",
+ "name": "Dlits Commission Management",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

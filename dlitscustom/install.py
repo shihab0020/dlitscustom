@@ -42,25 +42,13 @@ def after_install():
         print("🎉 DLITS Custom App installed successfully!")
         print("📋 Features installed:")
         print("   • Advanced Pricing Rules with 4 base price types")
-        print("   • DLITS Sales Partner with Easy Commission Payments")
-        print("   • Multiple Payment Options (Full, Partial, Custom)")
-        print("   • Automatic Supplier Creation & Linking")
-        print("   • Professional JSON Workspace with 6 shortcuts")
-        print("   • 3 Custom Financial Reports with PDF/Excel Export:")
-        print("     - Customer Ledger Report (invoices, payments, aging)")
-        print("     - Supplier Ledger Report (purchases, payments, outstanding)")
-        print("     - Tax Report (sales & purchase tax analysis)")
-        print("   • HTML Print Formats for Professional PDF Export")
-        print("   • Comprehensive Commission Reports & Payment History")
-        print("   • ERPNext Sales Partner Migration Tools")
+        print("   • Tax Report (sales & purchase tax analysis)")
+        print("   • Sales Analytics Report")
+        print("   • Customer Followup Management")
         print("=" * 60)
         print("📝 Next Steps:")
         print("   1. Access DLITS Custom workspace to view all features")
         print("   2. Test custom reports with PDF/Excel export functionality")
-        print("   3. Review existing ERPNext Sales Partners")
-        print("   4. Run migration: apps/dlitscustom/MIGRATION_GUIDE.md")
-        print("   5. Configure bank details for partners")
-        print("   6. Test commission payment workflow")
         print("=" * 60)
         
         return True
@@ -124,8 +112,8 @@ def migrate():
         
         # Step 1: Update custom fields
         print("📝 Updating custom fields...")
-        from dlitscustom.fixtures.custom_fields import create_sales_partner_custom_fields
-        create_sales_partner_custom_fields()
+        from dlitscustom.fixtures.custom_fields import create_all_custom_fields
+        create_all_custom_fields()
         print("✅ Custom fields updated")
         
         # Step 2: Update workspace
@@ -217,30 +205,6 @@ def create_basic_workspace():
                 "color": "#3498db"
             },
             {
-                "label": "DLITS Sales Partner",
-                "link_to": "DLITS Sales Partner",
-                "type": "DocType",
-                "color": "#e74c3c"
-            },
-            {
-                "label": "Commission Report",
-                "link_to": "DLITS Sales Partner Commission Report",
-                "type": "Report",
-                "color": "#1abc9c"
-            },
-            {
-                "label": "Customer Ledger Report",
-                "link_to": "DLITS Customer Ledger Report",
-                "type": "Report",
-                "color": "#2e7d32"
-            },
-            {
-                "label": "Supplier Ledger Report",
-                "link_to": "DLITS Supplier Ledger Report",
-                "type": "Report",
-                "color": "#dc3545"
-            },
-            {
                 "label": "Tax Report",
                 "link_to": "DLITS Tax Report",
                 "type": "Report",
@@ -253,11 +217,10 @@ def create_basic_workspace():
 def ensure_custom_reports():
     """Ensure all custom reports are properly registered"""
     reports = [
-        "DLITS Customer Ledger Report",
-        "DLITS Supplier Ledger Report",
-        "DLITS Tax Report"
+        "DLITS Tax Report",
+        "DLITS Sales Analytics"
     ]
-    
+
     for report_name in reports:
         if frappe.db.exists("Report", report_name):
             print(f"   ✅ Report '{report_name}' is available")
@@ -330,9 +293,8 @@ def cleanup_app_data():
     try:
         # Remove custom reports (optional - user may want to keep data)
         reports_to_remove = [
-            "DLITS Customer Ledger Report",
-            "DLITS Supplier Ledger Report",
-            "DLITS Tax Report"
+            "DLITS Tax Report",
+            "DLITS Sales Analytics"
         ]
         
         for report_name in reports_to_remove:

@@ -151,6 +151,41 @@ frappe.listview_settings['Dlits Customer Followup'] = {
     onload: function(listview) {
         const self = listview;
 
+        // The "Add Update" button lives inside .list-row-col.hidden-xs (the last
+        // data column). We pin that column to the right edge so it stays visible
+        // at any zoom level / viewport width without requiring the user to scroll.
+        const style = document.createElement('style');
+        style.textContent = `
+            /* Horizontal scroll container */
+            .list-result { overflow-x: auto !important; }
+            /* Enough width so columns overflow and sticky can activate */
+            .list-rows .list-row { min-width: 1100px; overflow: visible !important; }
+            /* Pin the column that holds our btn-action to the right edge */
+            .list-row .list-row-col:has(.btn-action) {
+                position:   sticky    !important;
+                right:      0         !important;
+                background: var(--card-bg, var(--fg-color)) !important;
+                z-index:    3         !important;
+                border-left: 1px solid var(--border-color) !important;
+                padding:    0 8px     !important;
+                display:    flex      !important;
+                align-items: center   !important;
+            }
+            /* Always show the button — not just on hover */
+            .btn-action {
+                display:    inline-block !important;
+                visibility: visible      !important;
+                opacity:    1            !important;
+            }
+            /* Keep like/comment count visible too */
+            .list-row-activity {
+                display:    flex      !important;
+                visibility: visible   !important;
+                opacity:    1         !important;
+            }
+        `;
+        document.head.appendChild(style);
+
         // Helper: apply preset filters
         function preset(filters) {
             self.filter_area.clear();
@@ -177,10 +212,6 @@ frappe.listview_settings['Dlits Customer Followup'] = {
             ]);
         });
 
-        listview.page.add_inner_button(__('Payment Followups'), function() {
-            preset([['is_payment_followup', '=', 1]]);
-        });
-
         listview.page.add_inner_button(__('High Priority'), function() {
             preset([['priority', 'in', 'High,Urgent']]);
         });
@@ -191,15 +222,6 @@ frappe.listview_settings['Dlits Customer Followup'] = {
 
         listview.page.add_inner_button(__('No Response'), function() {
             preset([['task_status', 'in', 'No Response,No Response (Closed)']]);
-        });
-
-        listview.page.add_inner_button(__('Active Pipeline'), function() {
-            preset([[
-                'task_status', 'in',
-                'Attempting Contact,Contacted,Needs Follow-up,Meeting Scheduled,' +
-                'Demo Scheduled,Proposal Preparing,Proposal Sent,Negotiation,' +
-                'Waiting Customer Decision'
-            ]]);
         });
 
         // ── Bulk status actions ───────────────────────────────────────────

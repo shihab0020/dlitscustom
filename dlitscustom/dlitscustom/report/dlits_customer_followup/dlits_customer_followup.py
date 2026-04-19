@@ -186,20 +186,28 @@ class FollowupReport:
 
         # Overdue: not filtered by last_contact_date — count ALL open followups
         # past their next_followup_date regardless of when they were last contacted.
-        overdue_base = {}
+        # Overdue = active followups with a past next_followup_date
+        #           OR no next_followup_date at all (unscheduled → also needs attention)
+        extra_conds = ""
+        extra_vals  = {"today": today(), "closed": tuple(closed_statuses)}
         if self.filters.get("customer"):
-            overdue_base["customer"] = self.filters.customer
+            extra_conds += " AND customer = %(customer)s"
+            extra_vals["customer"] = self.filters.customer
         if self.filters.get("task_owner"):
-            overdue_base["owned_by"] = self.filters.task_owner
+            extra_conds += " AND owned_by = %(task_owner)s"
+            extra_vals["task_owner"] = self.filters.task_owner
         if self.filters.get("priority"):
-            overdue_base["priority"] = self.filters.priority
+            extra_conds += " AND priority = %(priority)s"
+            extra_vals["priority"] = self.filters.priority
         if self.filters.get("is_payment_followup"):
-            overdue_base["is_payment_followup"] = 1
-        overdue = frappe.db.count("Dlits Customer Followup", {
-            **overdue_base,
-            "next_followup_date": ["<", today()],
-            "task_status":        ["not in", closed_statuses],
-        })
+            extra_conds += " AND is_payment_followup = 1"
+
+        overdue = frappe.db.sql(f"""
+            SELECT COUNT(*) FROM `tabDlits Customer Followup`
+            WHERE task_status NOT IN %(closed)s
+              AND (next_followup_date < %(today)s OR next_followup_date IS NULL)
+              {extra_conds}
+        """, extra_vals)[0][0]
 
         self.summary = [
             {"label": _("Total Followups"), "value": total,   "indicator": "gray",   "datatype": "Int"},

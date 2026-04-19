@@ -3,3 +3,5 @@
 
 # Version 1.0 patches
 dlitscustom.patches.v1_0.update_custom_fields
+dlitscustom.patches.v1_0.cleanup_old_features
+dlitscustom.patches.v1_0.create_commission_custom_fields

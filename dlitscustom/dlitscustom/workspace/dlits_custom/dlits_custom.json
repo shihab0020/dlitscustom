@@ -1,8 +1,8 @@
 {
  "app": "dlitscustom",
  "charts": [],
- "content": "[{\"id\":\"header_1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">DLITS Custom</span>\",\"col\":12}},{\"id\":\"header_2\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Pricing & Commission Management</b></span>\",\"col\":12}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pricing Rule Dlits\",\"col\":3}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"DLITS Sales Partner\",\"col\":3}},{\"id\":\"shortcut_3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Commission Report\",\"col\":3}},{\"id\":\"header_3\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Tools Management</b></span>\",\"col\":12}},{\"id\":\"shortcut_7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Tools Transfer\",\"col\":4}},{\"id\":\"shortcut_8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Tools Transfer Report\",\"col\":4}},{\"id\":\"header_4\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Financial Reports</b></span>\",\"col\":12}},{\"id\":\"shortcut_4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer Ledger Report\",\"col\":3}},{\"id\":\"shortcut_5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier Ledger Report\",\"col\":3}},{\"id\":\"shortcut_6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Tax Report\",\"col\":3}},{\"id\":\"shortcut_9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Analytics Report\",\"col\":3}},{\"id\":\"header_5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Configuration & Transactions</b></span>\",\"col\":12}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Pricing Management\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Commission Management\",\"col\":4}},{\"id\":\"card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Sales Transactions\",\"col\":4}},{\"id\":\"card_4\",\"type\":\"card\",\"data\":{\"card_name\":\"Tools Management\",\"col\":4}}]",
- "creation": "2024-01-01 00:00:00",
+ "content": "[{\"id\": \"header_1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Commission Management</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dlits Sales Partner\", \"col\": 3}}, {\"id\": \"shortcut_2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dlits Commission Management\", \"col\": 3}}, {\"id\": \"header_2\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Financial Reports</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Report\", \"col\": 3}}, {\"id\": \"shortcut_4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Analytics Report\", \"col\": 3}}, {\"id\": \"shortcut_5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"AR Report\", \"col\": 3}}, {\"id\": \"shortcut_6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"AR Summary\", \"col\": 3}}, {\"id\": \"header_3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Configuration &amp; Transactions</b></span>\", \"col\": 12}}, {\"id\": \"card_1\", \"type\": \"card\", \"data\": {\"card_name\": \"Commission Management\", \"col\": 4}}, {\"id\": \"card_2\", \"type\": \"card\", \"data\": {\"card_name\": \"Pricing Management\", \"col\": 4}}, {\"id\": \"card_3\", \"type\": \"card\", \"data\": {\"card_name\": \"Sales Transactions\", \"col\": 4}}, {\"id\": \"card_4\", \"type\": \"card\", \"data\": {\"card_name\": \"Customer Followup\", \"col\": 4}}, {\"id\": \"card_5\", \"type\": \"card\", \"data\": {\"card_name\": \"Financial Reports\", \"col\": 4}}]",
+ "creation": "2026-04-17 21:41:24.599641",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -18,8 +18,37 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Commission Management",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Dlits Sales Partner",
+   "link_count": 0,
+   "link_to": "Dlits Sales Partner",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Dlits Commission Management",
+   "link_count": 0,
+   "link_to": "Dlits Commission Management",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Pricing Management",
-   "link_count": 3,
+   "link_count": 2,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -41,65 +70,6 @@
    "link_count": 0,
    "link_to": "Item Price",
    "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Pricing Rules Analysis",
-   "link_count": 0,
-   "link_to": "Pricing Rules Analysis",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Commission Management",
-   "link_count": 4,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "DLITS Sales Partner",
-   "link_count": 0,
-   "link_to": "DLITS Sales Partner",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Payment Entry",
-   "link_count": 0,
-   "link_to": "Payment Entry",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Supplier",
-   "link_count": 0,
-   "link_to": "Supplier",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Commission Report",
-   "link_count": 0,
-   "link_to": "DLITS Sales Partner Commission Report",
-   "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   },
@@ -145,18 +115,28 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Financial Reports",
+   "label": "Customer Followup",
    "link_count": 3,
-   "link_type": "Report",
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
   {
    "hidden": 0,
-   "is_query_report": 1,
-   "label": "Customer Ledger Report",
+   "is_query_report": 0,
+   "label": "Dlits Customer Followup",
    "link_count": 0,
-   "link_to": "DLITS Customer Ledger Report",
+   "link_to": "Dlits Customer Followup",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Customer Followup Report",
+   "link_count": 0,
+   "link_to": "Dlits Customer Followup",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
@@ -164,12 +144,21 @@
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Supplier Ledger Report",
+   "label": "Customer Acquisition and Loyalty",
    "link_count": 0,
-   "link_to": "DLITS Supplier Ledger Report",
+   "link_to": "Dlits Customer Acquisition and Loyalty",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Financial Reports",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
   },
   {
    "hidden": 0,
@@ -193,55 +182,26 @@
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
-   "label": "Tools Management",
-   "link_count": 3,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Tools Transfer Dlits",
-   "link_count": 0,
-   "link_to": "Tools Transfer Dlits",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
    "is_query_report": 1,
-   "label": "Tools Transfer Report",
+   "label": "Accounts Receivable",
    "link_count": 0,
-   "link_to": "Tools Transfer Report",
+   "link_to": "DLITS Accounts Receivable",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
-   "label": "Employee Tools Allocation",
-   "link_count": 0,
-   "link_to": "Employee Tools Allocation",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
    "is_query_report": 1,
-   "label": "Customer Followup Report",
+   "label": "AR Summary",
    "link_count": 0,
-   "link_to": "Dlits Customer Followup",
+   "link_to": "DLITS Accounts Receivable Summary",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   }
  ],
- "modified": "2026-04-16 10:29:57.883824",
+ "modified": "2026-04-18 12:51:47.491476",
  "modified_by": "Administrator",
  "module": "dlitscustom",
  "name": "DLITS Custom",
@@ -270,42 +230,18 @@
  "sequence_id": 1.0,
  "shortcuts": [
   {
-   "color": "#3498db",
-   "doc_view": "List",
-   "label": "Pricing Rule Dlits",
-   "link_to": "Pricing Rule Dlits",
-   "type": "DocType"
-  },
-  {
    "color": "#e74c3c",
    "doc_view": "List",
-   "label": "DLITS Sales Partner",
-   "link_to": "DLITS Sales Partner",
+   "label": "Dlits Sales Partner",
+   "link_to": "Dlits Sales Partner",
    "type": "DocType"
   },
   {
-   "color": "#1abc9c",
-   "doc_view": "",
-   "label": "Commission Report",
-   "link_to": "DLITS Sales Partner Commission Report",
-   "report_ref_doctype": "DLITS Sales Partner",
-   "type": "Report"
-  },
-  {
-   "color": "#2e7d32",
-   "doc_view": "",
-   "label": "Customer Ledger Report",
-   "link_to": "DLITS Customer Ledger Report",
-   "report_ref_doctype": "Sales Invoice",
-   "type": "Report"
-  },
-  {
-   "color": "#dc3545",
-   "doc_view": "",
-   "label": "Supplier Ledger Report",
-   "link_to": "DLITS Supplier Ledger Report",
-   "report_ref_doctype": "Purchase Invoice",
-   "type": "Report"
+   "color": "#27ae60",
+   "doc_view": "List",
+   "label": "Dlits Commission Management",
+   "link_to": "Dlits Commission Management",
+   "type": "DocType"
   },
   {
    "color": "#6f42c1",
@@ -324,25 +260,33 @@
    "type": "Report"
   },
   {
-   "color": "#28a745",
+   "color": "#2e7d32",
+   "doc_view": "",
+   "label": "AR Report",
+   "link_to": "DLITS Accounts Receivable",
+   "report_ref_doctype": "Sales Invoice",
+   "type": "Report"
+  },
+  {
+   "color": "#1565c0",
+   "doc_view": "",
+   "label": "AR Summary",
+   "link_to": "DLITS Accounts Receivable Summary",
+   "report_ref_doctype": "Sales Invoice",
+   "type": "Report"
+  },
+  {
+   "color": "#3498db",
    "doc_view": "List",
-   "label": "Tools Transfer",
-   "link_to": "Tools Transfer Dlits",
+   "label": "Pricing Rule Dlits",
+   "link_to": "Pricing Rule Dlits",
    "type": "DocType"
   },
   {
    "color": "#17a2b8",
-   "doc_view": "",
-   "label": "Tools Transfer Report",
-   "link_to": "Tools Transfer Report",
-   "report_ref_doctype": "Tools Transfer Dlits",
-   "type": "Report"
-  },
-  {
-   "color": "#fd7e14",
    "doc_view": "List",
-   "label": "Employee Tools Allocation",
-   "link_to": "Employee Tools Allocation",
+   "label": "Customer Followup",
+   "link_to": "Dlits Customer Followup",
    "type": "DocType"
   }
  ],

@@ -1,94 +1,49 @@
 {
- "doctype": "DocType",
- "name": "DLITS Sales Partner",
- "module": "dlitscustom",
- "custom": 0,
  "actions": [],
- "allow_import": 1,
- "allow_export": 1,
- "allow_rename": 1,
  "autoname": "field:partner_name",
- "creation": "2024-01-01 00:00:00.000000",
- "default_view": "List",
- "editable_grid": 1,
+ "creation": "2026-04-17 00:00:00",
+ "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "basic_info_section",
   "partner_name",
-  "partner_code",
-  "column_break_3",
   "partner_type",
+  "user",
   "status",
-  "contact_section",
-  "contact_person",
+  "commission_rate",
+  "col_break_1",
   "email",
   "phone",
-  "column_break_8",
-  "address",
-  "city",
-  "country",
-  "commission_section",
-  "commission_type",
-  "commission_rate",
-  "column_break_14",
-  "minimum_commission",
-  "maximum_commission",
-  "payment_section",
-  "supplier",
-  "supplier_name_display",
-  "auto_create_supplier",
-  "column_break_18",
-  "payment_terms",
-  "bank_details_section",
+  "section_bank",
   "bank_name",
-  "account_number",
-  "column_break_22",
+  "bank_account_no",
   "iban",
-  "swift_code",
-  "tracking_section",
-  "total_sales",
-  "total_commission_earned",
-  "column_break_26",
-  "total_commission_paid",
-  "outstanding_commission",
-  "dates_section",
-  "start_date",
-  "end_date",
-  "column_break_30",
-  "last_commission_date",
-  "notes_section",
+  "col_break_bank",
+  "supplier",
   "notes"
  ],
  "fields": [
   {
-   "fieldname": "basic_info_section",
-   "fieldtype": "Section Break",
-   "label": "Basic Information"
-  },
-  {
    "fieldname": "partner_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Partner Name",
    "reqd": 1,
-   "unique": 1
+   "in_list_view": 1
   },
   {
-   "fieldname": "partner_code",
-   "fieldtype": "Data",
-   "label": "Partner Code",
-   "unique": 1
-  },
-  {
-   "fieldname": "column_break_3",
-   "fieldtype": "Column Break"
-  },
-  {
+   "default": "Internal User",
    "fieldname": "partner_type",
    "fieldtype": "Select",
    "label": "Partner Type",
-   "options": "Individual\nCompany\nAgent\nDistributor",
-   "reqd": 1
+   "options": "Internal User\nExternal",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "depends_on": "eval:doc.partner_type == 'Internal User'",
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User"
   },
   {
    "default": "Active",
@@ -96,18 +51,18 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Active\nInactive\nSuspended",
-   "reqd": 1
+   "options": "Active\nInactive"
   },
   {
-   "fieldname": "contact_section",
-   "fieldtype": "Section Break",
-   "label": "Contact Information"
+   "default": "0",
+   "fieldname": "commission_rate",
+   "fieldtype": "Percent",
+   "label": "Default Commission Rate (%)",
+   "in_list_view": 1
   },
   {
-   "fieldname": "contact_person",
-   "fieldtype": "Data",
-   "label": "Contact Person"
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "email",
@@ -118,103 +73,14 @@
   {
    "fieldname": "phone",
    "fieldtype": "Data",
-   "label": "Phone"
+   "label": "Phone",
+   "options": "Phone"
   },
   {
-   "fieldname": "column_break_8",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "address",
-   "fieldtype": "Small Text",
-   "label": "Address"
-  },
-  {
-   "fieldname": "city",
-   "fieldtype": "Data",
-   "label": "City"
-  },
-  {
-   "fieldname": "country",
-   "fieldtype": "Link",
-   "label": "Country",
-   "options": "Country"
-  },
-  {
-   "fieldname": "commission_section",
+   "fieldname": "section_bank",
    "fieldtype": "Section Break",
-   "label": "Commission Configuration"
-  },
-  {
-   "default": "Percentage",
-   "fieldname": "commission_type",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Commission Type",
-   "options": "Percentage\nFixed Amount",
-   "reqd": 1
-  },
-  {
-   "fieldname": "commission_rate",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Commission Rate (%)",
-   "precision": "2",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_14",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "minimum_commission",
-   "fieldtype": "Currency",
-   "label": "Minimum Commission"
-  },
-  {
-   "fieldname": "maximum_commission",
-   "fieldtype": "Currency",
-   "label": "Maximum Commission"
-  },
-  {
-   "fieldname": "payment_section",
-   "fieldtype": "Section Break",
-   "label": "Payment Configuration"
-  },
-  {
-   "fieldname": "supplier",
-   "fieldtype": "Link",
-   "label": "Linked Supplier",
-   "options": "Supplier"
-  },
-  {
-   "fieldname": "supplier_name_display",
-   "fieldtype": "Data",
-   "label": "Supplier Name",
-   "read_only": 1,
-   "fetch_from": "supplier.supplier_name",
-   "depends_on": "supplier"
-  },
-  {
-   "default": "1",
-   "fieldname": "auto_create_supplier",
-   "fieldtype": "Check",
-   "label": "Auto Create Supplier"
-  },
-  {
-   "fieldname": "column_break_18",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "payment_terms",
-   "fieldtype": "Select",
-   "label": "Payment Terms",
-   "options": "Monthly\nQuarterly\nOn Invoice\nCustom"
-  },
-  {
-   "fieldname": "bank_details_section",
-   "fieldtype": "Section Break",
-   "label": "Bank Details"
+   "label": "Bank Details",
+   "collapsible": 1
   },
   {
    "fieldname": "bank_name",
@@ -222,13 +88,9 @@
    "label": "Bank Name"
   },
   {
-   "fieldname": "account_number",
+   "fieldname": "bank_account_no",
    "fieldtype": "Data",
-   "label": "Account Number"
-  },
-  {
-   "fieldname": "column_break_22",
-   "fieldtype": "Column Break"
+   "label": "Bank Account No"
   },
   {
    "fieldname": "iban",
@@ -236,84 +98,27 @@
    "label": "IBAN"
   },
   {
-   "fieldname": "swift_code",
-   "fieldtype": "Data",
-   "label": "SWIFT Code"
-  },
-  {
-   "fieldname": "tracking_section",
-   "fieldtype": "Section Break",
-   "label": "Commission Tracking",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_sales",
-   "fieldtype": "Currency",
-   "label": "Total Sales",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_commission_earned",
-   "fieldtype": "Currency",
-   "label": "Total Commission Earned",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_26",
+   "fieldname": "col_break_bank",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "total_commission_paid",
-   "fieldtype": "Currency",
-   "label": "Total Commission Paid",
-   "read_only": 1
-  },
-  {
-   "fieldname": "outstanding_commission",
-   "fieldtype": "Currency",
-   "label": "Outstanding Commission",
-   "read_only": 1
-  },
-  {
-   "fieldname": "dates_section",
-   "fieldtype": "Section Break",
-   "label": "Important Dates"
-  },
-  {
-   "fieldname": "start_date",
-   "fieldtype": "Date",
-   "label": "Partnership Start Date"
-  },
-  {
-   "fieldname": "end_date",
-   "fieldtype": "Date",
-   "label": "Partnership End Date"
-  },
-  {
-   "fieldname": "column_break_30",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "last_commission_date",
-   "fieldtype": "Date",
-   "label": "Last Commission Payment Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "notes_section",
-   "fieldtype": "Section Break",
-   "label": "Notes"
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Linked Supplier",
+   "options": "Supplier",
+   "description": "Link to Supplier for commission payment via Payment Entry"
   },
   {
    "fieldname": "notes",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Small Text",
    "label": "Notes"
   }
  ],
- "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2026-04-17 00:00:00",
  "modified_by": "Administrator",
+ "module": "dlitscustom",
+ "name": "Dlits Sales Partner",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
@@ -331,41 +136,20 @@
   },
   {
    "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Sales Manager",
-   "share": 1,
+   "role": "Accounts Manager",
    "write": 1
   },
   {
    "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Sales User",
-   "share": 1,
+   "role": "Sales Manager",
    "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Accounts User",
-   "share": 1
   }
  ],
- "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
- "title_field": "partner_name",
  "track_changes": 1
 }

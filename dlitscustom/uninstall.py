@@ -102,10 +102,7 @@ def remove_custom_reports():
     """Remove custom reports created by the app"""
     try:
         # List of custom reports created by this app
-        custom_reports = [
-            "Pricing Rules Analysis",
-            "DLITS Sales Partner Commission Report"
-        ]
+        custom_reports = []
         
         for report in custom_reports:
             if frappe.db.exists("Report", report):

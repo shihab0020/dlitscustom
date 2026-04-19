@@ -3,6 +3,8 @@ from . import __version__ as app_version
 app_name = "dlitscustom"
 app_title = "dlitscustom"
 app_publisher = "shihab"
+app_icon = "/assets/dlitscustom/images/dlitscustom-icon.svg"
+app_color = "#2e3092"
 app_description = "Custom Modification For Dlits"
 app_email = "shihab@dlits-sa.com"
 app_license = "mit"
@@ -31,9 +33,11 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
-    "Quotation": "public/js/quotation_pricing_rule_dlits.js",
     "Sales Order": "public/js/sales_order_pricing_rule_dlits.js",
-    "Sales Invoice": "public/js/sales_invoice_pricing_rule_dlits.js",
+    "Sales Invoice": [
+        "public/js/sales_invoice_pricing_rule_dlits.js",
+        "public/js/sales_invoice_dlits_commission.js"
+    ],
     "Payment Entry": "public/js/payment_entry_dlits.js",
     "Journal Entry": "public/js/journal_entry_dlits.js",
     "Customer": "public/js/customer.js",
@@ -135,25 +139,14 @@ before_uninstall = "dlitscustom.install.before_uninstall"
 
 doc_events = {
     "Sales Invoice": {
-        "validate": [
-            "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits",
-            "dlitscustom.override.sales_invoice_commission.validate_sales_invoice_commission"
-        ],
-        "on_submit": "dlitscustom.override.sales_invoice_commission.on_submit_sales_invoice_commission",
-        "on_cancel": "dlitscustom.override.sales_invoice_commission.on_cancel_sales_invoice_commission"
+        "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
     },
     "Sales Order": {
-        "validate": [
-            "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits",
-            "dlitscustom.override.sales_order_commission.validate_sales_order_commission"
-        ]
+        "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
     },
     "Quotation": {
         "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
     }
-    # "Customer": {
-    #     "on_update": "dlitscustom.dlitscustom.doctype.dlits_customer_followup.dlits_customer_followup.update_customer_aging"
-    # }
 }
 
 fixtures = [
@@ -164,9 +157,19 @@ fixtures = [
         "filters": [
             ["dt", "=", "Customer"],
             ["fieldname", "in", [
-                "custom_last_followup_status", 
-                "custom_last_followup_date", 
+                "custom_last_followup_status",
+                "custom_last_followup_date",
                 "custom_followup_aging"
+            ]]
+        ]
+    },
+    {
+        "dt": "Custom Field",
+        "filters": [
+            ["dt", "=", "Sales Invoice"],
+            ["fieldname", "in", [
+                "dlits_sales_partner",
+                "dlits_is_me"
             ]]
         ]
     }
