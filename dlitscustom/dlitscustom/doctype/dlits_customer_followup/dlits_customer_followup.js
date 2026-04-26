@@ -321,39 +321,64 @@ function render_invoice_list(frm) {
             if (!invoices.length) {
                 wrapper.$wrapper.html(
                     `<p style="color:var(--text-muted);font-size:12px;margin:4px 0;">
-                        ${__('No outstanding invoices.')}
+                        ${__('No outstanding amounts.')}
                     </p>`
                 );
                 return;
             }
+
             let rows = invoices.map(function(inv) {
+                // Type badge
+                let is_je = inv.doc_type === 'Journal Entry';
+                let type_cls = is_je ? 'purple' : 'blue';
+                let type_label = is_je ? __('JE') : __('SI');
+                let type_badge = `<span class="indicator-pill ${type_cls} no-margin"
+                    style="font-size:10px;font-weight:600;">${type_label}</span>`;
+
+                // URL for the document link
+                let doc_route = is_je ? 'journal-entry' : 'sales-invoice';
+
+                // Overdue badge
                 let overdue_badge = '';
                 if (inv.overdue_days > 0) {
                     overdue_badge = `<span class="indicator-pill red no-margin"
-                        style="margin-left:5px;font-size:10px;">
-                        ${inv.overdue_days}d overdue</span>`;
+                        style="margin-left:5px;font-size:10px;">${inv.overdue_days}d</span>`;
                 }
+
                 let due_date_html = inv.due_date
                     ? frappe.datetime.str_to_user(inv.due_date)
                     : '—';
-                // highlight due-date cell if overdue
                 let due_style = inv.overdue_days > 0
                     ? 'color:var(--red);font-weight:600;'
                     : 'color:var(--text-color);';
+
+                // Paid amount — green if any payment was made
+                let paid = inv.paid_amount || 0;
+                let paid_html = paid > 0
+                    ? `<span style="color:var(--green,#198754);font-weight:600;">
+                           ${frappe.format(paid, {fieldtype:'Currency'})}</span>`
+                    : `<span style="color:var(--text-muted);">—</span>`;
+
                 return `<tr style="border-bottom:1px solid var(--border-color);">
+                    <td style="padding:5px 8px;white-space:nowrap;">
+                        ${type_badge}
+                    </td>
                     <td style="padding:5px 8px;">
-                        <a href="/app/sales-invoice/${inv.name}" target="_blank"
-                           style="color:var(--primary);font-size:12px;">${inv.name}</a>
+                        <a href="/app/${doc_route}/${inv.doc_name}" target="_blank"
+                           style="color:var(--primary);font-size:12px;">${inv.doc_name}</a>
                         ${overdue_badge}
                     </td>
                     <td style="padding:5px 8px;font-size:12px;color:var(--text-color);">
-                        ${frappe.datetime.str_to_user(inv.posting_date)}
+                        ${inv.posting_date ? frappe.datetime.str_to_user(inv.posting_date) : '—'}
                     </td>
                     <td style="padding:5px 8px;font-size:12px;${due_style}">
                         ${due_date_html}
                     </td>
                     <td style="padding:5px 8px;font-size:12px;text-align:right;color:var(--text-color);">
-                        ${frappe.format(inv.grand_total, {fieldtype:'Currency'})}
+                        ${frappe.format(inv.invoice_amount, {fieldtype:'Currency'})}
+                    </td>
+                    <td style="padding:5px 8px;font-size:12px;text-align:right;">
+                        ${paid_html}
                     </td>
                     <td style="padding:5px 8px;font-size:12px;text-align:right;
                                color:var(--red);font-weight:600;">
@@ -362,6 +387,11 @@ function render_invoice_list(frm) {
                 </tr>`;
             }).join('');
 
+            let th = (label, align) =>
+                `<th style="padding:6px 8px;text-align:${align || 'left'};font-size:11px;
+                             font-weight:600;color:var(--text-muted);
+                             text-transform:uppercase;letter-spacing:.4px;">${__(label)}</th>`;
+
             wrapper.$wrapper.html(`
                 <div style="margin-top:6px;overflow-x:auto;border:1px solid var(--border-color);
                             border-radius:var(--border-radius-md,4px);">
@@ -369,31 +399,13 @@ function render_invoice_list(frm) {
                         <thead>
                             <tr style="background:var(--subtle-bg);
                                        border-bottom:2px solid var(--border-color);">
-                                <th style="padding:6px 8px;text-align:left;font-size:11px;
-                                           font-weight:600;color:var(--text-muted);
-                                           text-transform:uppercase;letter-spacing:.4px;">
-                                    ${__('Invoice')}
-                                </th>
-                                <th style="padding:6px 8px;text-align:left;font-size:11px;
-                                           font-weight:600;color:var(--text-muted);
-                                           text-transform:uppercase;letter-spacing:.4px;">
-                                    ${__('Date')}
-                                </th>
-                                <th style="padding:6px 8px;text-align:left;font-size:11px;
-                                           font-weight:600;color:var(--text-muted);
-                                           text-transform:uppercase;letter-spacing:.4px;">
-                                    ${__('Due Date')}
-                                </th>
-                                <th style="padding:6px 8px;text-align:right;font-size:11px;
-                                           font-weight:600;color:var(--text-muted);
-                                           text-transform:uppercase;letter-spacing:.4px;">
-                                    ${__('Amount')}
-                                </th>
-                                <th style="padding:6px 8px;text-align:right;font-size:11px;
-                                           font-weight:600;color:var(--text-muted);
-                                           text-transform:uppercase;letter-spacing:.4px;">
-                                    ${__('Outstanding')}
-                                </th>
+                                ${th('Type')}
+                                ${th('Document')}
+                                ${th('Date')}
+                                ${th('Due Date')}
+                                ${th('Amount', 'right')}
+                                ${th('Paid', 'right')}
+                                ${th('Outstanding', 'right')}
                             </tr>
                         </thead>
                         <tbody>${rows}</tbody>

@@ -11,13 +11,28 @@ class DlitsSalesPartner(Document):
 
 @frappe.whitelist()
 def get_partner_by_user(user=None):
-    """Return the active Dlits Sales Partner linked to the given user (defaults to session user)."""
+    """Return the active Dlits Sales Partner for the session user.
+
+    If the user's individual partner belongs to a group, the group is returned
+    so commission invoices are attributed to the group, not the individual.
+    """
     if not user:
         user = frappe.session.user
-    partner = frappe.db.get_value(
+
+    individual = frappe.db.get_value(
         "Dlits Sales Partner",
-        {"user": user, "partner_type": "Internal User", "status": "Active"},
-        ["name", "partner_name"],
-        as_dict=True
+        {"user": user, "partner_type": "Internal User", "status": "Active", "is_group": 0},
+        "name"
     )
-    return partner
+    if not individual:
+        return None
+
+    # Check if this individual is a member of any active group
+    group_name = frappe.db.get_value(
+        "Dlits Sales Partner Member",
+        {"sales_partner": individual, "parenttype": "Dlits Sales Partner"},
+        "parent"
+    )
+
+    target = group_name if group_name else individual
+    return frappe.db.get_value("Dlits Sales Partner", target, ["name", "partner_name"], as_dict=True)

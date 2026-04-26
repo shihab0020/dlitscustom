@@ -134,28 +134,67 @@ def bulk_update_status(names, status):
 
 @frappe.whitelist()
 def get_customer_outstanding(customer):
-    """Return total outstanding Sales Invoice amount for a customer."""
+    """Return total outstanding amount for a customer (Sales Invoices + Journal Entries)."""
     result = frappe.db.sql("""
-        SELECT IFNULL(SUM(outstanding_amount), 0) AS outstanding
-        FROM `tabSales Invoice`
-        WHERE customer = %s AND docstatus = 1 AND outstanding_amount > 0
+        SELECT IFNULL(SUM(voucher_outstanding), 0) AS outstanding
+        FROM (
+            SELECT SUM(amount) AS voucher_outstanding
+            FROM `tabPayment Ledger Entry`
+            WHERE party_type = 'Customer' AND party = %s
+              AND against_voucher_type IN ('Sales Invoice', 'Journal Entry')
+              AND delinked = 0
+            GROUP BY against_voucher_no
+            HAVING SUM(amount) > 0
+        ) sub
     """, customer, as_dict=True)
     return result[0].outstanding if result else 0
 
 
 @frappe.whitelist()
 def get_customer_invoices(customer):
-    """Return outstanding invoices for a customer (for payment followup display)."""
-    invoices = frappe.db.sql("""
-        SELECT
-            name, posting_date, due_date,
-            grand_total, outstanding_amount,
-            DATEDIFF(CURDATE(), IFNULL(due_date, posting_date)) AS overdue_days
-        FROM `tabSales Invoice`
-        WHERE customer = %s AND docstatus = 1 AND outstanding_amount > 0
+    """Return outstanding Sales Invoices and Journal Entries for a customer."""
+    rows = frappe.db.sql("""
+        SELECT * FROM (
+            SELECT
+                'Sales Invoice' AS doc_type,
+                si.name AS doc_name,
+                si.posting_date,
+                si.due_date,
+                si.grand_total AS invoice_amount,
+                (si.grand_total - ple_agg.outstanding) AS paid_amount,
+                ple_agg.outstanding AS outstanding_amount,
+                DATEDIFF(CURDATE(), IFNULL(si.due_date, si.posting_date)) AS overdue_days
+            FROM (
+                SELECT against_voucher_no, SUM(amount) AS outstanding
+                FROM `tabPayment Ledger Entry`
+                WHERE party_type = 'Customer' AND party = %(customer)s
+                  AND against_voucher_type = 'Sales Invoice' AND delinked = 0
+                GROUP BY against_voucher_no
+                HAVING SUM(amount) > 0
+            ) ple_agg
+            JOIN `tabSales Invoice` si ON si.name = ple_agg.against_voucher_no
+            WHERE si.docstatus = 1
+
+            UNION ALL
+
+            SELECT
+                'Journal Entry' AS doc_type,
+                ple.against_voucher_no AS doc_name,
+                MIN(ple.posting_date) AS posting_date,
+                MAX(ple.due_date) AS due_date,
+                SUM(CASE WHEN ple.amount > 0 THEN ple.amount ELSE 0 END) AS invoice_amount,
+                SUM(CASE WHEN ple.amount > 0 THEN ple.amount ELSE 0 END) - SUM(ple.amount) AS paid_amount,
+                SUM(ple.amount) AS outstanding_amount,
+                DATEDIFF(CURDATE(), IFNULL(MAX(ple.due_date), MAX(ple.posting_date))) AS overdue_days
+            FROM `tabPayment Ledger Entry` ple
+            WHERE ple.party_type = 'Customer' AND ple.party = %(customer)s
+              AND ple.against_voucher_type = 'Journal Entry' AND ple.delinked = 0
+            GROUP BY ple.against_voucher_no
+            HAVING SUM(ple.amount) > 0
+        ) combined
         ORDER BY due_date ASC, posting_date ASC
-    """, customer, as_dict=True)
-    return invoices
+    """, {"customer": customer}, as_dict=True)
+    return rows
 
 
 @frappe.whitelist()

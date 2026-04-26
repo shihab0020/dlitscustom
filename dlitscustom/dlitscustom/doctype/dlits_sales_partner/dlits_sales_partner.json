@@ -6,6 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "partner_name",
+  "is_group",
+  "group_members",
   "partner_type",
   "user",
   "status",
@@ -30,16 +32,31 @@
    "in_list_view": 1
   },
   {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group",
+   "in_list_view": 1
+  },
+  {
+   "depends_on": "eval:doc.is_group",
+   "fieldname": "group_members",
+   "fieldtype": "Table",
+   "label": "Group Members",
+   "options": "Dlits Sales Partner Member"
+  },
+  {
    "default": "Internal User",
+   "depends_on": "eval:!doc.is_group",
+   "mandatory_depends_on": "eval:!doc.is_group",
    "fieldname": "partner_type",
    "fieldtype": "Select",
    "label": "Partner Type",
    "options": "Internal User\nExternal",
-   "reqd": 1,
    "in_list_view": 1
   },
   {
-   "depends_on": "eval:doc.partner_type == 'Internal User'",
+   "depends_on": "eval:!doc.is_group && doc.partner_type == 'Internal User'",
    "fieldname": "user",
    "fieldtype": "Link",
    "label": "User",
@@ -65,22 +82,25 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:!doc.is_group",
    "fieldname": "email",
    "fieldtype": "Data",
    "label": "Email",
    "options": "Email"
   },
   {
+   "depends_on": "eval:!doc.is_group",
    "fieldname": "phone",
    "fieldtype": "Data",
    "label": "Phone",
    "options": "Phone"
   },
   {
+   "collapsible": 1,
+   "depends_on": "eval:!doc.is_group",
    "fieldname": "section_bank",
    "fieldtype": "Section Break",
-   "label": "Bank Details",
-   "collapsible": 1
+   "label": "Bank Details"
   },
   {
    "fieldname": "bank_name",
@@ -102,6 +122,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:!doc.is_group",
    "fieldname": "supplier",
    "fieldtype": "Link",
    "label": "Linked Supplier",
@@ -149,6 +170,7 @@
    "write": 1
   }
  ],
+ "allow_rename": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "track_changes": 1

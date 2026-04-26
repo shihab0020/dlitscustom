@@ -33,7 +33,11 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
-    "Sales Order": "public/js/sales_order_pricing_rule_dlits.js",
+    "Sales Order": [
+        "public/js/sales_order_pricing_rule_dlits.js",
+        "public/js/sales_order_dlits_stock_transfer.js",
+    ],
+    "Project": "public/js/project_dlits_stock_transfer.js",
     "Sales Invoice": [
         "public/js/sales_invoice_pricing_rule_dlits.js",
         "public/js/sales_invoice_dlits_commission.js"
@@ -41,7 +45,12 @@ doctype_js = {
     "Payment Entry": "public/js/payment_entry_dlits.js",
     "Journal Entry": "public/js/journal_entry_dlits.js",
     "Customer": "public/js/customer.js",
-    "Quotation": "public/js/quotation.js"
+    "Quotation": "public/js/quotation.js",
+    "Dlits Sales Partner": "public/js/dlits_sales_partner.js"
+}
+
+doctype_list_js = {
+    "Dlits Stock Transfer Request": "public/js/dlits_stock_transfer_request_list.js"
 }
 
 # Customer Followup related document events
