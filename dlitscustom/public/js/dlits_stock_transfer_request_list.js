@@ -1,5 +1,5 @@
 frappe.listview_settings["Dlits Stock Transfer Request"] = {
-	add_fields: ["status", "request_type", "technician_name", "assigned_supervisor", "assigned_showroom_user"],
+	add_fields: ["status", "request_type", "receiver_name", "approved_by", "dispatch_user"],
 
 	get_indicator(doc) {
 		const map = {
@@ -26,7 +26,6 @@ frappe.listview_settings["Dlits Stock Transfer Request"] = {
 	},
 
 	onload(listview) {
-		// Quick-filter buttons in the toolbar
 		listview.page.add_inner_button(__("My Requests"), () => {
 			listview.filter_area.add([["Dlits Stock Transfer Request", "requested_by", "=", frappe.session.user]]);
 		});
@@ -34,7 +33,7 @@ frappe.listview_settings["Dlits Stock Transfer Request"] = {
 			listview.filter_area.add([["Dlits Stock Transfer Request", "status", "=", "Pending Approval"]]);
 		});
 		listview.page.add_inner_button(__("My Deliveries"), () => {
-			listview.filter_area.add([["Dlits Stock Transfer Request", "assigned_showroom_user", "=", frappe.session.user]]);
+			listview.filter_area.add([["Dlits Stock Transfer Request", "dispatch_user", "=", frappe.session.user]]);
 		});
 		listview.page.add_inner_button(__("In Progress"), () => {
 			listview.filter_area.add([["Dlits Stock Transfer Request", "status", "not in", "Draft,Completed,Cancelled,Rejected"]]);

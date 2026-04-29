@@ -13,25 +13,25 @@
   "request_date",
   "col_break_requester",
   "requested_by",
-  "technician_name",
-  "destination_warehouse",
+  "receiver_name",
+  "deliver_to_warehouse",
   "sec_reference",
   "reference_type",
   "reference_name",
   "sec_approval",
-  "assigned_supervisor",
-  "source_warehouse",
+  "approved_by",
+  "dispatch_warehouse",
   "approval_date",
   "col_break_approval",
-  "assigned_showroom_user",
+  "dispatch_user",
   "sec_items",
   "items",
   "sec_notes",
-  "technician_notes",
+  "request_notes",
   "col_break_notes",
-  "supervisor_notes",
+  "approval_notes",
   "sec_delivery",
-  "showroom_notes",
+  "delivery_notes",
   "delivery_date",
   "col_break_delivery",
   "received_date",
@@ -108,7 +108,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Requested By (Technician)",
+   "label": "Requested By",
    "options": "User",
    "reqd": 1,
    "search_index": 1
@@ -116,14 +116,14 @@
   {
    "fetch_from": "requested_by.full_name",
    "fetch_if_empty": 1,
-   "fieldname": "technician_name",
+   "fieldname": "receiver_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Technician Name",
+   "label": "Receiver Name",
    "read_only": 1
   },
   {
-   "fieldname": "destination_warehouse",
+   "fieldname": "deliver_to_warehouse",
    "fieldtype": "Link",
    "label": "Deliver To Warehouse",
    "options": "Warehouse",
@@ -150,17 +150,17 @@
   {
    "fieldname": "sec_approval",
    "fieldtype": "Section Break",
-   "label": "Approval & Assignment"
+   "label": "Approval & Dispatch"
   },
   {
-   "fieldname": "assigned_supervisor",
+   "fieldname": "approved_by",
    "fieldtype": "Link",
-   "label": "Assigned Supervisor",
+   "label": "Approved By",
    "options": "User",
    "read_only": 1
   },
   {
-   "fieldname": "source_warehouse",
+   "fieldname": "dispatch_warehouse",
    "fieldtype": "Link",
    "label": "Dispatch From Warehouse",
    "options": "Warehouse"
@@ -177,11 +177,10 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "assigned_showroom_user",
+   "fieldname": "dispatch_user",
    "fieldtype": "Link",
-   "label": "Assigned Showroom User",
-   "options": "User",
-   "read_only": 1
+   "label": "Sending Warehouse User",
+   "options": "User"
   },
   {
    "fieldname": "sec_items",
@@ -202,19 +201,18 @@
    "label": "Notes"
   },
   {
-   "fieldname": "technician_notes",
+   "fieldname": "request_notes",
    "fieldtype": "Small Text",
-   "label": "Request Notes (Technician)"
+   "label": "Request Notes"
   },
   {
    "fieldname": "col_break_notes",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "supervisor_notes",
+   "fieldname": "approval_notes",
    "fieldtype": "Small Text",
-   "label": "Supervisor Notes / Decision",
-   "read_only": 1
+   "label": "Approval Notes"
   },
   {
    "collapsible": 1,
@@ -223,10 +221,9 @@
    "label": "Delivery & Completion"
   },
   {
-   "fieldname": "showroom_notes",
+   "fieldname": "delivery_notes",
    "fieldtype": "Small Text",
-   "label": "Delivery Notes (Showroom)",
-   "read_only": 1
+   "label": "Delivery Notes"
   },
   {
    "fieldname": "delivery_date",
@@ -274,7 +271,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-25 00:00:00.000000",
+ "modified": "2026-04-29 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Dlitscustom",
  "name": "Dlits Stock Transfer Request",
@@ -282,96 +279,41 @@
  "owner": "Administrator",
  "permissions": [
   {
-   "amend": 1,
-   "cancel": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "submit": 1,
-   "write": 1
+   "amend": 1, "cancel": 1, "create": 1, "delete": 1, "email": 1,
+   "export": 1, "print": 1, "read": 1, "report": 1,
+   "role": "System Manager", "share": 1, "submit": 1, "write": 1
   },
   {
-   "amend": 1,
-   "cancel": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Stock Manager",
-   "share": 1,
-   "submit": 1,
-   "write": 1
+   "amend": 1, "cancel": 1, "create": 1, "email": 1,
+   "export": 1, "print": 1, "read": 1, "report": 1,
+   "role": "Stock Manager", "share": 1, "submit": 1, "write": 1
   },
   {
-   "amend": 1,
-   "cancel": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Stock User",
-   "share": 1,
-   "submit": 1,
-   "write": 1
+   "amend": 1, "cancel": 1, "create": 1, "email": 1,
+   "export": 1, "print": 1, "read": 1, "report": 1,
+   "role": "Stock User", "share": 1, "submit": 1, "write": 1
   },
   {
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Shb Basic User",
-   "share": 1,
-   "write": 1
+   "cancel": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1,
+   "role": "Shb Stock Transfer Approver", "share": 1, "submit": 1, "write": 1
+  },
+  {
+   "create": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1,
+   "role": "Shb Basic User", "share": 1, "write": 1
   }
  ],
- "search_fields": "requested_by,technician_name,status,request_type",
+ "search_fields": "requested_by,receiver_name,status,request_type",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [
-  {
-   "color": "Grey",
-   "title": "Draft"
-  },
-  {
-   "color": "Orange",
-   "title": "Pending Approval"
-  },
-  {
-   "color": "Green",
-   "title": "Approved"
-  },
-  {
-   "color": "Red",
-   "title": "Rejected"
-  },
-  {
-   "color": "Blue",
-   "title": "Delivered"
-  },
-  {
-   "color": "Purple",
-   "title": "Received"
-  },
-  {
-   "color": "Green",
-   "title": "Completed"
-  },
-  {
-   "color": "Red",
-   "title": "Cancelled"
-  }
+  {"color": "Grey",   "title": "Draft"},
+  {"color": "Orange", "title": "Pending Approval"},
+  {"color": "Green",  "title": "Approved"},
+  {"color": "Red",    "title": "Rejected"},
+  {"color": "Blue",   "title": "Delivered"},
+  {"color": "Purple", "title": "Received"},
+  {"color": "Green",  "title": "Completed"},
+  {"color": "Red",    "title": "Cancelled"}
  ],
  "title_field": "title",
  "track_changes": 1

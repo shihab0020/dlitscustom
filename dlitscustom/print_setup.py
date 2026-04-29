@@ -60,22 +60,22 @@ DSTR_PRINT_HTML = """
 
     <div class="dstr-box">
       <div class="dstr-box-hd">Requester / Technician</div>
-      <div class="dstr-r"><span class="dstr-l">Name</span><span class="dstr-v">{{ doc.technician_name or doc.requested_by }}</span></div>
+      <div class="dstr-r"><span class="dstr-l">Name</span><span class="dstr-v">{{ doc.receiver_name or doc.requested_by }}</span></div>
       <div class="dstr-r"><span class="dstr-l">Request Date</span><span class="dstr-v">{{ frappe.format(doc.request_date, "Date") }}</span></div>
-      <div class="dstr-r"><span class="dstr-l">Deliver To</span><span class="dstr-v">{{ doc.destination_warehouse or "—" }}</span></div>
+      <div class="dstr-r"><span class="dstr-l">Deliver To</span><span class="dstr-v">{{ doc.deliver_to_warehouse or "—" }}</span></div>
       {% if doc.reference_type and doc.reference_name %}
       <div class="dstr-r"><span class="dstr-l">{{ doc.reference_type }}</span><span class="dstr-v">{{ doc.reference_name }}</span></div>
       {% endif %}
-      {% if doc.technician_notes %}
-      <div style="margin-top:6px;font-size:10px;color:#555;font-style:italic">{{ doc.technician_notes }}</div>
+      {% if doc.request_notes %}
+      <div style="margin-top:6px;font-size:10px;color:#555;font-style:italic">{{ doc.request_notes }}</div>
       {% endif %}
     </div>
 
     <div class="dstr-box">
       <div class="dstr-box-hd">Approval &amp; Dispatch</div>
-      <div class="dstr-r"><span class="dstr-l">Supervisor</span><span class="dstr-v">{{ doc.assigned_supervisor or "—" }}</span></div>
-      <div class="dstr-r"><span class="dstr-l">Dispatch From</span><span class="dstr-v">{{ doc.source_warehouse or "—" }}</span></div>
-      <div class="dstr-r"><span class="dstr-l">Showroom User</span><span class="dstr-v">{{ doc.assigned_showroom_user or "—" }}</span></div>
+      <div class="dstr-r"><span class="dstr-l">Supervisor</span><span class="dstr-v">{{ doc.approved_by or "—" }}</span></div>
+      <div class="dstr-r"><span class="dstr-l">Dispatch From</span><span class="dstr-v">{{ doc.dispatch_warehouse or "—" }}</span></div>
+      <div class="dstr-r"><span class="dstr-l">Showroom User</span><span class="dstr-v">{{ doc.dispatch_user or "—" }}</span></div>
       {% if doc.approval_date %}
       <div class="dstr-r"><span class="dstr-l">Approved On</span><span class="dstr-v">{{ frappe.format(doc.approval_date, "Date") }}</span></div>
       {% endif %}
@@ -121,13 +121,13 @@ DSTR_PRINT_HTML = """
     </tbody>
   </table>
 
-  {% if doc.supervisor_notes or doc.showroom_notes %}
+  {% if doc.approval_notes or doc.delivery_notes %}
   <div style="margin-bottom:14px">
-    {% if doc.supervisor_notes %}
-    <div class="dstr-note"><div class="dstr-note-hd">Supervisor Notes</div>{{ doc.supervisor_notes }}</div>
+    {% if doc.approval_notes %}
+    <div class="dstr-note"><div class="dstr-note-hd">Supervisor Notes</div>{{ doc.approval_notes }}</div>
     {% endif %}
-    {% if doc.showroom_notes %}
-    <div class="dstr-note"><div class="dstr-note-hd">Delivery Notes</div>{{ doc.showroom_notes }}</div>
+    {% if doc.delivery_notes %}
+    <div class="dstr-note"><div class="dstr-note-hd">Delivery Notes</div>{{ doc.delivery_notes }}</div>
     {% endif %}
   </div>
   {% endif %}
@@ -135,20 +135,91 @@ DSTR_PRINT_HTML = """
   <div class="dstr-sigs">
     <div class="dstr-sig">
       <div>Requested By</div>
-      <div class="dstr-sig-name">{{ doc.technician_name or doc.requested_by }}</div>
+      <div class="dstr-sig-name">{{ doc.receiver_name or doc.requested_by }}</div>
     </div>
     <div class="dstr-sig">
       <div>Approved &amp; Dispatched By</div>
-      <div class="dstr-sig-name">{{ doc.assigned_supervisor or "" }}</div>
+      <div class="dstr-sig-name">{{ doc.approved_by or "" }}</div>
     </div>
     <div class="dstr-sig">
       <div>Received By</div>
-      <div class="dstr-sig-name">{{ doc.technician_name or doc.requested_by }}</div>
+      <div class="dstr-sig-name">{{ doc.receiver_name or doc.requested_by }}</div>
     </div>
   </div>
 
 </div>
 """
+
+
+def create_dlits_workflow():
+	"""Create (or update) the Dlits Stock Transfer workflow."""
+	wf_name = "Dlits Stock Transfer"
+	doc_type = "Dlits Stock Transfer Request"
+
+	states = [
+		{"state": "Draft",            "doc_status": "0", "allow_edit": "All",                         "avoid_status_override": 1, "is_optional_state": 0},
+		{"state": "Pending Approval", "doc_status": "0", "allow_edit": "Shb Stock Transfer Approver",  "avoid_status_override": 0, "is_optional_state": 0},
+		{"state": "Approved",         "doc_status": "0", "allow_edit": "All",                         "avoid_status_override": 0, "is_optional_state": 0},
+		{"state": "Rejected",         "doc_status": "0", "allow_edit": "All",                         "avoid_status_override": 0, "is_optional_state": 1},
+		{"state": "Delivered",        "doc_status": "0", "allow_edit": "All",                         "avoid_status_override": 0, "is_optional_state": 0},
+		{"state": "Received",         "doc_status": "0", "allow_edit": "Shb Stock Transfer Approver",  "avoid_status_override": 0, "is_optional_state": 0},
+		{"state": "Completed",        "doc_status": "1", "allow_edit": "Shb Stock Transfer Approver",  "avoid_status_override": 0, "is_optional_state": 0},
+		{"state": "Cancelled",        "doc_status": "2", "allow_edit": "Shb Stock Transfer Approver",  "avoid_status_override": 0, "is_optional_state": 0},
+	]
+
+	transitions = [
+		{"state": "Draft",            "action": "Request Approval", "next_state": "Pending Approval", "allowed": "All",                          "allow_self_approval": 1, "condition": ""},
+		{"state": "Pending Approval", "action": "Approve",          "next_state": "Approved",         "allowed": "Shb Stock Transfer Approver",  "allow_self_approval": 1, "condition": ""},
+		{"state": "Pending Approval", "action": "Reject",           "next_state": "Rejected",         "allowed": "Shb Stock Transfer Approver",  "allow_self_approval": 1, "condition": ""},
+		{"state": "Rejected",         "action": "Revise",           "next_state": "Draft",            "allowed": "All",                          "allow_self_approval": 1, "condition": ""},
+		{"state": "Approved",         "action": "Mark Delivered",   "next_state": "Delivered",        "allowed": "All",                          "allow_self_approval": 1, "condition": ""},
+		{"state": "Delivered",        "action": "Confirm Receipt",  "next_state": "Received",         "allowed": "All",                          "allow_self_approval": 1, "condition": ""},
+		{"state": "Received",         "action": "Complete",         "next_state": "Completed",        "allowed": "Shb Stock Transfer Approver",  "allow_self_approval": 1, "condition": ""},
+		{"state": "Completed",        "action": "Cancel",           "next_state": "Cancelled",        "allowed": "Shb Stock Transfer Approver",  "allow_self_approval": 1, "condition": ""},
+	]
+
+	if frappe.db.exists("Workflow", wf_name):
+		wf = frappe.get_doc("Workflow", wf_name)
+		wf.states = []
+		wf.transitions = []
+	else:
+		wf = frappe.new_doc("Workflow")
+		wf.workflow_name = wf_name
+		wf.document_type = doc_type
+		wf.workflow_state_field = "status"
+		wf.override_status = 1
+		wf.send_email_alert = 0
+		wf.is_active = 1
+
+	for s in states:
+		wf.append("states", s)
+	for t in transitions:
+		wf.append("transitions", t)
+
+	# ignore_links: states are child rows not yet in DB when transitions are validated
+	wf.flags.ignore_links = True
+	if wf.is_new():
+		wf.insert(ignore_permissions=True)
+		print(f"Created workflow: {wf_name}")
+	else:
+		wf.save(ignore_permissions=True)
+		print(f"Updated workflow: {wf_name}")
+
+	frappe.db.commit()
+
+
+def fix_report_modules():
+	"""Fix reports whose module was set to the wrong app (e.g. Stock instead of dlitscustom)."""
+	reports = frappe.db.get_all(
+		"Report",
+		filters={"name": ["like", "Dlits%"], "module": ["!=", "dlitscustom"]},
+		fields=["name", "module"],
+	)
+	for r in reports:
+		frappe.db.set_value("Report", r.name, "module", "dlitscustom")
+		print(f"Fixed {r.name}: {r.module} → dlitscustom")
+	frappe.db.commit()
+	print("Done.")
 
 
 def create_dlits_print_formats():
@@ -188,7 +259,6 @@ def update_dlits_workspace():
 	# ── Content (visual layout) ────────────────────────────────────────────────
 	content = json.loads(ws.content or "[]")
 
-	# Only add if not already present
 	existing_ids = {item.get("id") for item in content}
 	if "header_st" not in existing_ids:
 		st_content = [
@@ -198,11 +268,8 @@ def update_dlits_workspace():
 				"data": {"text": '<span class="h4"><b>Stock Transfer Management</b></span>', "col": 12},
 			},
 			{"id": "shortcut_st1", "type": "shortcut", "data": {"shortcut_name": "Stock Transfer Requests", "col": 3}},
-			{"id": "shortcut_st2", "type": "shortcut", "data": {"shortcut_name": "Warehouse User Assignment", "col": 3}},
 		]
-		# Insert at top so it's the first section
 		content = st_content + content
-		# Add the card entry into the cards row (append to existing card row)
 		content.append({"id": "card_st", "type": "card", "data": {"card_name": "Stock Transfer Management", "col": 4}})
 		ws.content = json.dumps(content)
 
@@ -213,7 +280,7 @@ def update_dlits_workspace():
 			{
 				"hidden": 0, "is_query_report": 0,
 				"label": "Stock Transfer Management",
-				"link_count": 2, "link_type": "DocType",
+				"link_count": 1, "link_type": "DocType",
 				"onboard": 1, "type": "Card Break",
 			},
 			{
@@ -223,34 +290,18 @@ def update_dlits_workspace():
 				"link_count": 0, "link_type": "DocType",
 				"onboard": 1, "type": "Link",
 			},
-			{
-				"hidden": 0, "is_query_report": 0,
-				"label": "Dlits Warehouse User Assignment",
-				"link_to": "Dlits Warehouse User Assignment",
-				"link_count": 0, "link_type": "DocType",
-				"onboard": 0, "type": "Link",
-			},
 		]:
 			ws.append("links", link)
 
 	# ── Shortcuts (top quick-access tiles) ────────────────────────────────────
 	existing_sc = {sc.label for sc in ws.shortcuts}
-	for sc in [
-		{
+	if "Stock Transfer Requests" not in existing_sc:
+		ws.append("shortcuts", {
 			"color": "#2e3092", "doc_view": "List",
 			"label": "Stock Transfer Requests",
 			"link_to": "Dlits Stock Transfer Request",
 			"type": "DocType",
-		},
-		{
-			"color": "#17a2b8", "doc_view": "List",
-			"label": "Warehouse User Assignment",
-			"link_to": "Dlits Warehouse User Assignment",
-			"type": "DocType",
-		},
-	]:
-		if sc["label"] not in existing_sc:
-			ws.append("shortcuts", sc)
+		})
 
 	# ── Roles (who sees the workspace) ────────────────────────────────────────
 	existing_roles = {r.role for r in ws.roles}
