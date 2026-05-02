@@ -32,3 +32,6 @@ cd /home/shihab/frappe-bench && bench --site dlitsdev1 execute playwright_pdf.in
 
 
 git push -u origin develop
+
+
+bench --site dlits2025 execute dlitscustom.print_setup.create_dlits_workflow 2>&1
