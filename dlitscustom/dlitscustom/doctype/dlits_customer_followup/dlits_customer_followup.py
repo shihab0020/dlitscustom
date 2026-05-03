@@ -39,13 +39,28 @@ class DlitsCustomerFollowup(Document):
         )
 
     def on_update(self):
-        """Push latest status/date/aging back to the Customer master."""
+        """Push latest status/date/aging back to the Customer master and outstanding invoices."""
         if self.customer:
             frappe.db.set_value("Customer", self.customer, {
                 "custom_last_followup_status": self.task_status,
                 "custom_last_followup_date":   self.last_contact_date,
                 "custom_followup_aging":        self.aging_days
             })
+            self._sync_invoice_followup_fields()
+
+    def _sync_invoice_followup_fields(self):
+        """Update followup status/date/aging on all outstanding Sales Invoices for this customer."""
+        invoices = frappe.get_all(
+            "Sales Invoice",
+            filters={"customer": self.customer, "docstatus": 1, "outstanding_amount": [">", 0]},
+            pluck="name"
+        )
+        for inv in invoices:
+            frappe.db.set_value("Sales Invoice", inv, {
+                "custom_last_followup_status": self.task_status,
+                "custom_last_followup_date":   self.last_contact_date,
+                "custom_followup_aging_days":  self.aging_days
+            }, update_modified=False)
 
     def on_trash(self):
         if not self.customer:
@@ -64,6 +79,18 @@ class DlitsCustomerFollowup(Document):
                 "custom_last_followup_date":   None,
                 "custom_followup_aging":        0
             })
+            # Clear SI followup fields too
+            invoices = frappe.get_all(
+                "Sales Invoice",
+                filters={"customer": self.customer, "docstatus": 1, "outstanding_amount": [">", 0]},
+                pluck="name"
+            )
+            for inv in invoices:
+                frappe.db.set_value("Sales Invoice", inv, {
+                    "custom_last_followup_status": "",
+                    "custom_last_followup_date":   None,
+                    "custom_followup_aging_days":  0
+                }, update_modified=False)
 
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────

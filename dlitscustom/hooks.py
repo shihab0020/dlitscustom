@@ -40,7 +40,8 @@ doctype_js = {
     "Project": "public/js/project_dlits_stock_transfer.js",
     "Sales Invoice": [
         "public/js/sales_invoice_pricing_rule_dlits.js",
-        "public/js/sales_invoice_dlits_commission.js"
+        "public/js/sales_invoice_dlits_commission.js",
+        "public/js/sales_invoice_dlits_followup.js"
     ],
     "Payment Entry": "public/js/payment_entry_dlits.js",
     "Journal Entry": "public/js/journal_entry_dlits.js",
@@ -50,7 +51,9 @@ doctype_js = {
 }
 
 doctype_list_js = {
-    "Dlits Stock Transfer Request": "public/js/dlits_stock_transfer_request_list.js"
+    "Dlits Stock Transfer Request": "public/js/dlits_stock_transfer_request_list.js",
+    "Customer":      "public/js/customer_list.js",
+    "Sales Invoice": "public/js/sales_invoice_list.js"
 }
 
 # Customer Followup related document events

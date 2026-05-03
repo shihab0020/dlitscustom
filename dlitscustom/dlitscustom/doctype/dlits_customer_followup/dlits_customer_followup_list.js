@@ -1,8 +1,33 @@
 // ── Dlits Customer Followup — List View ──────────────────────────────────────
 
+const STATUS_COLORS = {
+    'Attempting Contact':        'orange',
+    'Contacted':                 'blue',
+    'No Response':               'yellow',
+    'Needs Follow-up':           'orange',
+    'Information Sent':          'cyan',
+    'Meeting Scheduled':         'blue',
+    'Demo Scheduled':            'blue',
+    'Requirement Gathering':     'purple',
+    'Proposal Preparing':        'purple',
+    'Proposal Sent':             'purple',
+    'Negotiation':               'green',
+    'Waiting Customer Decision': 'yellow',
+    'On Hold':                   'gray',
+    'Follow-up Later':           'gray',
+    'Future Opportunity':        'light-blue',
+    'Lost to Competitor':        'red',
+    'No Budget':                 'red',
+    'Not Interested':            'red',
+    'Wrong Contact':             'red',
+    'Project Cancelled':         'red',
+    'No Response (Closed)':      'red',
+    'Completed':                 'green',
+    'Cancelled':                 'gray'
+};
+
 frappe.listview_settings['Dlits Customer Followup'] = {
 
-    // Fetch all display fields
     add_fields: [
         'customer', 'task_title', 'task_status', 'priority', 'owned_by',
         'last_contact_date', 'aging_days', 'next_followup_date',
@@ -10,55 +35,19 @@ frappe.listview_settings['Dlits Customer Followup'] = {
         'agreed_payment_amount', 'total_outstanding', 'total_linked_balance'
     ],
 
-    // ── Status indicator pill ─────────────────────────────────────────────
-    get_indicator: function(doc) {
-        const STATUS_COLORS = {
-            'Attempting Contact':        'orange',
-            'Contacted':                 'blue',
-            'No Response':               'yellow',
-            'Needs Follow-up':           'orange',
-            'Information Sent':          'cyan',
-            'Meeting Scheduled':         'blue',
-            'Demo Scheduled':            'blue',
-            'Requirement Gathering':     'purple',
-            'Proposal Preparing':        'purple',
-            'Proposal Sent':             'purple',
-            'Negotiation':               'green',
-            'Waiting Customer Decision': 'yellow',
-            'On Hold':                   'gray',
-            'Follow-up Later':           'gray',
-            'Future Opportunity':        'light-blue',
-            'Lost to Competitor':        'red',
-            'No Budget':                 'red',
-            'Not Interested':            'red',
-            'Wrong Contact':             'red',
-            'Project Cancelled':         'red',
-            'No Response (Closed)':      'red',
-            'Completed':                 'green',
-            'Cancelled':                 'gray'
-        };
-        return [
-            __(doc.task_status),
-            STATUS_COLORS[doc.task_status] || 'gray',
-            'task_status,=,' + doc.task_status
-        ];
-    },
-
     // ── Column formatters ─────────────────────────────────────────────────
     formatters: {
 
-        // Updates count — badge with icon
-        total_interactions: function(value) {
-            if (!value && value !== 0) return '';
-            let count = value || 0;
-            // use Frappe indicator classes so dark-mode is handled automatically
-            let cls = count === 0 ? 'gray' : count >= 5 ? 'green' : 'blue';
+        // Status — single colorful pill column (replaces get_indicator dot)
+        task_status: function(value) {
+            if (!value) return '';
+            let cls = STATUS_COLORS[value] || 'gray';
             return `<span class="indicator-pill ${cls} no-margin"
                 style="font-size:11px;font-weight:600;padding:2px 8px;">
-                ${count}</span>`;
+                ${__(value)}</span>`;
         },
 
-        // Priority — Frappe indicator pill (theme-aware)
+        // Priority — colored pill
         priority: function(value) {
             if (!value) return '';
             const cls_map = {
@@ -72,7 +61,17 @@ frappe.listview_settings['Dlits Customer Followup'] = {
                 style="font-size:11px;font-weight:600;">${__(value)}</span>`;
         },
 
-        // Last Outcome — Frappe indicator pill
+        // Updates count — badge
+        total_interactions: function(value) {
+            if (!value && value !== 0) return '';
+            let count = value || 0;
+            let cls = count === 0 ? 'gray' : count >= 5 ? 'green' : 'blue';
+            return `<span class="indicator-pill ${cls} no-margin"
+                style="font-size:11px;font-weight:600;padding:2px 8px;">
+                ${count}</span>`;
+        },
+
+        // Last Outcome — colored pill
         last_outcome: function(value) {
             if (!value) return '';
             const cls_map = {
@@ -86,7 +85,7 @@ frappe.listview_settings['Dlits Customer Followup'] = {
                 style="font-size:11px;font-weight:600;">${__(value)}</span>`;
         },
 
-        // Aging — Frappe indicator pill, colour by urgency
+        // Aging — color by urgency
         aging_days: function(value) {
             if (value === null || value === undefined || value === '') return '';
             let n = parseInt(value) || 0;
@@ -99,7 +98,7 @@ frappe.listview_settings['Dlits Customer Followup'] = {
                 style="font-size:11px;font-weight:600;">${n}d</span>`;
         },
 
-        // Next Scheduled — use CSS vars so theme is respected
+        // Next Scheduled — highlight overdue/today
         next_followup_date: function(value) {
             if (!value) return `<span style="color:var(--text-muted);font-size:11px;">—</span>`;
             let today = frappe.datetime.get_today();
@@ -147,20 +146,30 @@ frappe.listview_settings['Dlits Customer Followup'] = {
         }
     },
 
-    // ── onload: presets + bulk actions ───────────────────────────────────
+    // ── onload: column CSS + presets + bulk actions ───────────────────────
     onload: function(listview) {
         const self = listview;
 
-        // The "Add Update" button lives inside .list-row-col.hidden-xs (the last
-        // data column). We pin that column to the right edge so it stays visible
-        // at any zoom level / viewport width without requiring the user to scroll.
         const style = document.createElement('style');
         style.textContent = `
-            /* Horizontal scroll container */
+            /* Horizontal scroll — row wider than viewport activates sticky */
             .list-result { overflow-x: auto !important; }
-            /* Enough width so columns overflow and sticky can activate */
-            .list-rows .list-row { min-width: 1100px; overflow: visible !important; }
-            /* Pin the column that holds our btn-action to the right edge */
+            .list-rows .list-row,
+            .frappe-list .list-header { min-width: 1280px !important; overflow: visible !important; }
+
+            /* ── Fixed column widths (Frappe adds fieldname as CSS class) ── */
+            .list-row-col.customer,        .list-header-col.customer        { flex: 0 0 170px !important; max-width: 170px !important; }
+            .list-row-col.owned_by,        .list-header-col.owned_by        { flex: 0 0 120px !important; max-width: 120px !important; }
+            .list-row-col.task_status,     .list-header-col.task_status     { flex: 0 0 135px !important; max-width: 135px !important; }
+            .list-row-col.priority,        .list-header-col.priority        { flex: 0 0 80px  !important; max-width: 80px  !important; }
+            .list-row-col.is_payment_followup, .list-header-col.is_payment_followup { flex: 0 0 72px !important; max-width: 72px !important; }
+            .list-row-col.total_interactions,  .list-header-col.total_interactions  { flex: 0 0 65px !important; max-width: 65px !important; }
+            .list-row-col.last_outcome,    .list-header-col.last_outcome    { flex: 0 0 115px !important; max-width: 115px !important; }
+            .list-row-col.next_followup_date,  .list-header-col.next_followup_date  { flex: 0 0 88px !important; max-width: 88px !important; }
+            .list-row-col.last_contact_date,   .list-header-col.last_contact_date   { flex: 0 0 105px !important; max-width: 105px !important; }
+            .list-row-col.aging_days,      .list-header-col.aging_days      { flex: 0 0 70px  !important; max-width: 70px  !important; }
+
+            /* Pin Add Update button column to the right edge */
             .list-row .list-row-col:has(.btn-action) {
                 position:   sticky    !important;
                 right:      0         !important;
@@ -171,13 +180,11 @@ frappe.listview_settings['Dlits Customer Followup'] = {
                 display:    flex      !important;
                 align-items: center   !important;
             }
-            /* Always show the button — not just on hover */
             .btn-action {
                 display:    inline-block !important;
                 visibility: visible      !important;
                 opacity:    1            !important;
             }
-            /* Keep like/comment count visible too */
             .list-row-activity {
                 display:    flex      !important;
                 visibility: visible   !important;
