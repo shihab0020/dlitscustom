@@ -75,7 +75,7 @@ DSTR_PRINT_HTML = """
       <div class="dstr-box-hd">Approval &amp; Dispatch</div>
       <div class="dstr-r"><span class="dstr-l">Supervisor</span><span class="dstr-v">{{ doc.approved_by or "—" }}</span></div>
       <div class="dstr-r"><span class="dstr-l">Dispatch From</span><span class="dstr-v">{{ doc.dispatch_warehouse or "—" }}</span></div>
-      <div class="dstr-r"><span class="dstr-l">Showroom User</span><span class="dstr-v">{{ doc.dispatch_user or "—" }}</span></div>
+      <div class="dstr-r"><span class="dstr-l">Dispatch Users</span><span class="dstr-v">{% if doc.dispatch_users %}{{ doc.dispatch_users | map(attribute='full_name') | select | join(', ') or doc.dispatch_users | map(attribute='user') | join(', ') }}{% else %}—{% endif %}</span></div>
       {% if doc.approval_date %}
       <div class="dstr-r"><span class="dstr-l">Approved On</span><span class="dstr-v">{{ frappe.format(doc.approval_date, "Date") }}</span></div>
       {% endif %}
@@ -172,8 +172,8 @@ def create_dlits_workflow():
 		{"state": "Pending Approval", "action": "Approve",          "next_state": "Approved",         "allowed": "Shb Stock Transfer Approver",  "allow_self_approval": 1, "condition": ""},
 		{"state": "Pending Approval", "action": "Reject",           "next_state": "Rejected",         "allowed": "Shb Stock Transfer Approver",  "allow_self_approval": 1, "condition": ""},
 		{"state": "Rejected",         "action": "Revise",           "next_state": "Draft",            "allowed": "All",                          "allow_self_approval": 1, "condition": ""},
-		{"state": "Approved",         "action": "Mark Delivered",   "next_state": "Delivered",        "allowed": "All",                          "allow_self_approval": 1, "condition": ""},
-		{"state": "Delivered",        "action": "Confirm Receipt",  "next_state": "Received",         "allowed": "All",                          "allow_self_approval": 1, "condition": ""},
+		{"state": "Approved",         "action": "Mark Delivered",   "next_state": "Delivered",        "allowed": "All",                          "allow_self_approval": 1, "condition": "frappe.session.user in [d.user for d in doc.dispatch_users] or frappe.user.has_role('Shb Stock Transfer Approver')"},
+		{"state": "Delivered",        "action": "Confirm Receipt",  "next_state": "Received",         "allowed": "All",                          "allow_self_approval": 1, "condition": "frappe.session.user == doc.requested_by or frappe.user.has_role('Shb Stock Transfer Approver')"},
 		{"state": "Received",         "action": "Complete",         "next_state": "Completed",        "allowed": "Shb Stock Transfer Approver",  "allow_self_approval": 1, "condition": ""},
 		{"state": "Completed",        "action": "Cancel",           "next_state": "Cancelled",        "allowed": "Shb Stock Transfer Approver",  "allow_self_approval": 1, "condition": ""},
 	]

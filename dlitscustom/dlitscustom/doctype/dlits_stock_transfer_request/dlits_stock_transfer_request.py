@@ -13,19 +13,31 @@ class DlitsStockTransferRequest(Document):
 
 	def before_workflow_action(self):
 		action = frappe.flags.wf_action
+		is_approver = frappe.user.has_role("Shb Stock Transfer Approver")
+
 		if action == "Approve":
 			if not self.dispatch_warehouse:
 				frappe.throw(_("Please fill <b>Dispatch From Warehouse</b> before approving."))
-			if not self.dispatch_user:
-				frappe.throw(_("Please fill <b>Sending Warehouse User</b> before approving."))
+			if not self.dispatch_users:
+				frappe.throw(_("Please add at least one <b>Sending Warehouse User</b> before approving."))
 			self.db_set("approved_by", frappe.session.user)
 			self.db_set("approval_date", today())
+
 		elif action == "Reject":
 			self.db_set("approved_by", frappe.session.user)
 			self.db_set("approval_date", today())
+
 		elif action == "Mark Delivered":
+			if not is_approver:
+				allowed = [d.user for d in self.dispatch_users]
+				if frappe.session.user not in allowed:
+					frappe.throw(_("Only an assigned Sending Warehouse User can mark as Delivered."))
 			self.db_set("delivery_date", today())
+
 		elif action == "Confirm Receipt":
+			if not is_approver:
+				if frappe.session.user != self.requested_by:
+					frappe.throw(_("Only the requester ({0}) can confirm receipt.").format(self.requested_by))
 			self.db_set("received_date", today())
 
 	def on_submit(self):

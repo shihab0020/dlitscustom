@@ -23,7 +23,7 @@
   "dispatch_warehouse",
   "approval_date",
   "col_break_approval",
-  "dispatch_user",
+  "dispatch_users",
   "sec_items",
   "items",
   "sec_notes",
@@ -177,10 +177,10 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "dispatch_user",
-   "fieldtype": "Link",
-   "label": "Sending Warehouse User",
-   "options": "User"
+   "fieldname": "dispatch_users",
+   "fieldtype": "Table",
+   "label": "Sending Warehouse Users",
+   "options": "Dlits Stock Transfer Dispatch User"
   },
   {
    "fieldname": "sec_items",
