@@ -35,3 +35,14 @@ git push -u origin develop
 
 
 bench --site dlits2025 execute dlitscustom.print_setup.create_dlits_workflow 2>&1
+
+
+#######slow issue increase speed
+/home/dlits/frappe-bench/config/supervisor.conf
+command=/home/dlits/frappe-bench/env/bin/gunicorn -b 127.0.0.1:8000 -w 4 --max-requests 5000 --max-requests-jitter 500 -t 120 --graceful-timeout 30 frappe.app:application --preload
+-W 9 to -W 4 for 4 workers
+
+udo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+innodb_buffer_pool_size = 2G   # for 8 GB RAM
+innodb_buffer_pool_size = 4G   # for 16 GB RAM
+sudo systemctl restart mariadb

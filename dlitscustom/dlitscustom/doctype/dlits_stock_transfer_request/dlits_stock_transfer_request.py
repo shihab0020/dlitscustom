@@ -10,35 +10,45 @@ class DlitsStockTransferRequest(Document):
 
 	def validate(self):
 		self._validate_items()
+		self._handle_status_transition()
 
-	def before_workflow_action(self):
-		action = frappe.flags.wf_action
-		is_approver = frappe.user.has_role("Shb Stock Transfer Approver")
+	def _handle_status_transition(self):
+		old = self.get_doc_before_save()
+		old_status = old.status if old else None
+		new_status = self.status
 
-		if action == "Approve":
+		if old_status == new_status:
+			return
+
+		is_approver = "Shb Stock Transfer Approver" in frappe.get_roles(frappe.session.user)
+
+		if new_status in ("Pending Approval", "Draft"):
+			if not is_approver and frappe.session.user != self.requested_by:
+				frappe.throw(_("Only the original requester can perform this action."))
+
+		elif new_status in ("Approved", "Rejected"):
 			if not self.dispatch_warehouse:
 				frappe.throw(_("Please fill <b>Dispatch From Warehouse</b> before approving."))
+			if not self.cost_center:
+				frappe.throw(_("Please select a <b>Destination Cost Center</b> before approving."))
 			if not self.dispatch_users:
 				frappe.throw(_("Please add at least one <b>Sending Warehouse User</b> before approving."))
-			self.db_set("approved_by", frappe.session.user)
-			self.db_set("approval_date", today())
+			self.approved_by = frappe.session.user
+			self.approval_date = today()
 
-		elif action == "Reject":
-			self.db_set("approved_by", frappe.session.user)
-			self.db_set("approval_date", today())
-
-		elif action == "Mark Delivered":
+		elif new_status == "Delivered":
 			if not is_approver:
+				if frappe.session.user == self.requested_by:
+					frappe.throw(_("The requester cannot mark as Delivered."))
 				allowed = [d.user for d in self.dispatch_users]
 				if frappe.session.user not in allowed:
 					frappe.throw(_("Only an assigned Sending Warehouse User can mark as Delivered."))
-			self.db_set("delivery_date", today())
+			self.delivery_date = today()
 
-		elif action == "Confirm Receipt":
-			if not is_approver:
-				if frappe.session.user != self.requested_by:
-					frappe.throw(_("Only the requester ({0}) can confirm receipt.").format(self.requested_by))
-			self.db_set("received_date", today())
+		elif new_status == "Received":
+			if not is_approver and frappe.session.user != self.requested_by:
+				frappe.throw(_("Only the requester ({0}) can confirm receipt.").format(self.requested_by))
+			self.received_date = today()
 
 	def on_submit(self):
 		se = _create_stock_entry(self)
@@ -89,17 +99,28 @@ def _create_stock_entry(doc):
 		if doc.request_type == "Return":
 			s_wh, t_wh = t_wh, s_wh
 
+		conversion_factor = (
+			frappe.db.get_value(
+				"UOM Conversion Detail",
+				{"parent": row.item_code, "uom": row.uom},
+				"conversion_factor",
+			) or 1.0
+		)
+
 		se.append("items", {
 			"item_code": row.item_code,
 			"qty": effective_qty,
 			"uom": row.uom,
+			"conversion_factor": conversion_factor,
 			"s_warehouse": s_wh,
 			"t_warehouse": t_wh,
+			"cost_center": doc.cost_center,
 		})
 
 	if not se.items:
 		frappe.throw(_("No valid items found to transfer."))
 
+	se.set_missing_values()
 	se.insert(ignore_permissions=True)
 	se.submit()
 	return se

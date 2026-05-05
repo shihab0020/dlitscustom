@@ -21,6 +21,7 @@
   "sec_approval",
   "approved_by",
   "dispatch_warehouse",
+  "cost_center",
   "approval_date",
   "col_break_approval",
   "dispatch_users",
@@ -125,6 +126,7 @@
   {
    "fieldname": "deliver_to_warehouse",
    "fieldtype": "Link",
+   "ignore_user_permissions": 1,
    "label": "Deliver To Warehouse",
    "options": "Warehouse",
    "reqd": 1
@@ -162,8 +164,17 @@
   {
    "fieldname": "dispatch_warehouse",
    "fieldtype": "Link",
+   "ignore_user_permissions": 1,
    "label": "Dispatch From Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Destination Cost Center",
+   "options": "Cost Center",
+   "read_only_depends_on": "eval:['Completed','Cancelled'].includes(doc.status)"
   },
   {
    "fieldname": "approval_date",
