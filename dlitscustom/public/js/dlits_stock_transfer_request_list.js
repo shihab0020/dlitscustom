@@ -1,5 +1,6 @@
 frappe.listview_settings["Dlits Stock Transfer Request"] = {
-	add_fields: ["status", "request_type", "receiver_name", "approved_by", "dispatch_user"],
+	add_fields: ["status", "request_type", "receiver_name", "approved_by", "dispatch_user",
+		"total_qty", "total_delivered_qty", "qty_status"],
 
 	get_indicator(doc) {
 		const map = {
@@ -22,6 +23,15 @@ frappe.listview_settings["Dlits Stock Transfer Request"] = {
 				return `<span style="background:#dc3545;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">↩ Return</span>`;
 			}
 			return `<span style="background:#0d6efd;color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">→ Transfer</span>`;
+		},
+		qty_status(val) {
+			if (!val) return "";
+			const palette = {
+				"All Delivered":    ["#28a745", "#fff"],
+				"Partial Delivered":["#fd7e14", "#fff"],
+			};
+			const [bg, fg] = palette[val] || ["#6c757d", "#fff"];
+			return `<span style="background:${bg};color:${fg};padding:1px 7px;border-radius:8px;font-size:11px">${__(val)}</span>`;
 		},
 	},
 

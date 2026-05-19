@@ -3,6 +3,12 @@ from frappe.model.document import Document
 from frappe.utils import date_diff, today, get_datetime
 from frappe import _
 
+CLOSED_STATUSES = (
+    'Completed', 'Cancelled', 'No Response (Closed)',
+    'Lost to Competitor', 'No Budget', 'Not Interested',
+    'Wrong Contact', 'Project Cancelled'
+)
+
 class DlitsCustomerFollowup(Document):
     def validate(self):
         self.calculate_totals()
@@ -21,7 +27,10 @@ class DlitsCustomerFollowup(Document):
                 self.last_contact_date = max(dates).date()
 
     def calculate_aging(self):
-        self.aging_days = date_diff(today(), self.last_contact_date) if self.last_contact_date else 0
+        if self.task_status in CLOSED_STATUSES:
+            self.aging_days = 0
+        else:
+            self.aging_days = date_diff(today(), self.last_contact_date) if self.last_contact_date else 0
 
     def update_last_outcome(self):
         """Cache the outcome of the most recent update row that has one set."""
@@ -47,16 +56,29 @@ class DlitsCustomerFollowup(Document):
                 "custom_followup_aging":        self.aging_days
             })
             self._sync_invoice_followup_fields()
+            self._sync_quotation_followup_fields()
 
     def _sync_invoice_followup_fields(self):
-        """Update followup status/date/aging on all outstanding Sales Invoices for this customer."""
-        invoices = frappe.get_all(
-            "Sales Invoice",
-            filters={"customer": self.customer, "docstatus": 1, "outstanding_amount": [">", 0]},
-            pluck="name"
-        )
-        for inv in invoices:
+        """Update followup status/date/aging only on Sales Invoices linked in this followup."""
+        linked = [
+            r.document_name for r in (self.linked_documents or [])
+            if r.document_type == 'Sales Invoice' and r.document_name
+        ]
+        for inv in linked:
             frappe.db.set_value("Sales Invoice", inv, {
+                "custom_last_followup_status": self.task_status,
+                "custom_last_followup_date":   self.last_contact_date,
+                "custom_followup_aging_days":  self.aging_days
+            }, update_modified=False)
+
+    def _sync_quotation_followup_fields(self):
+        """Update followup status/date/aging only on Quotations linked in this followup."""
+        linked = [
+            r.document_name for r in (self.linked_documents or [])
+            if r.document_type == 'Quotation' and r.document_name
+        ]
+        for quot in linked:
+            frappe.db.set_value("Quotation", quot, {
                 "custom_last_followup_status": self.task_status,
                 "custom_last_followup_date":   self.last_contact_date,
                 "custom_followup_aging_days":  self.aging_days
@@ -65,45 +87,113 @@ class DlitsCustomerFollowup(Document):
     def on_trash(self):
         if not self.customer:
             return
+
+        # Collect the docs linked to THIS followup before it is deleted
+        my_invoices   = {r.document_name for r in (self.linked_documents or [])
+                         if r.document_type == 'Sales Invoice' and r.document_name}
+        my_quotations = {r.document_name for r in (self.linked_documents or [])
+                         if r.document_type == 'Quotation' and r.document_name}
+
         others = frappe.get_all(
             "Dlits Customer Followup",
             filters={"customer": self.customer, "name": ["!=", self.name]},
             order_by="last_contact_date desc",
             limit=1
         )
+
         if others:
-            frappe.get_doc("Dlits Customer Followup", others[0].name).on_update()
+            remaining = frappe.get_doc("Dlits Customer Followup", others[0].name)
+            remaining.on_update()
+            # Docs covered by the remaining followup will already be updated above;
+            # clear only the docs that are NOT in the remaining followup's linked list.
+            covered_invoices   = {r.document_name for r in (remaining.linked_documents or [])
+                                   if r.document_type == 'Sales Invoice' and r.document_name}
+            covered_quotations = {r.document_name for r in (remaining.linked_documents or [])
+                                   if r.document_type == 'Quotation' and r.document_name}
         else:
             frappe.db.set_value("Customer", self.customer, {
                 "custom_last_followup_status": "",
                 "custom_last_followup_date":   None,
                 "custom_followup_aging":        0
             })
-            # Clear SI followup fields too
-            invoices = frappe.get_all(
-                "Sales Invoice",
-                filters={"customer": self.customer, "docstatus": 1, "outstanding_amount": [">", 0]},
-                pluck="name"
-            )
-            for inv in invoices:
-                frappe.db.set_value("Sales Invoice", inv, {
-                    "custom_last_followup_status": "",
-                    "custom_last_followup_date":   None,
-                    "custom_followup_aging_days":  0
-                }, update_modified=False)
+            covered_invoices   = set()
+            covered_quotations = set()
+
+        # Clear followup fields on linked docs not covered by another followup
+        for inv in (my_invoices - covered_invoices):
+            frappe.db.set_value("Sales Invoice", inv, {
+                "custom_last_followup_status": "",
+                "custom_last_followup_date":   None,
+                "custom_followup_aging_days":  0
+            }, update_modified=False)
+        for quot in (my_quotations - covered_quotations):
+            frappe.db.set_value("Quotation", quot, {
+                "custom_last_followup_status": "",
+                "custom_last_followup_date":   None,
+                "custom_followup_aging_days":  0
+            }, update_modified=False)
 
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────
 
 def update_customer_aging():
-    """Daily: refresh aging_days on all customers that have a followup date."""
-    for c in frappe.get_all("Customer", filters={"custom_last_followup_date": ["is", "set"]}):
-        last_date = frappe.db.get_value("Customer", c.name, "custom_last_followup_date")
-        if last_date:
-            frappe.db.set_value(
-                "Customer", c.name, "custom_followup_aging",
-                date_diff(today(), last_date), update_modified=False
-            )
+    """Daily: refresh aging on active followup docs, Customer master, and linked SI/Quotation."""
+    closed = CLOSED_STATUSES
+
+    # 1. Active followup documents — increment aging_days
+    frappe.db.sql("""
+        UPDATE `tabDlits Customer Followup`
+        SET aging_days = DATEDIFF(CURDATE(), last_contact_date)
+        WHERE task_status NOT IN %s
+          AND last_contact_date IS NOT NULL
+    """, (closed,))
+
+    # 2. Closed followup documents — keep aging at 0
+    frappe.db.sql("""
+        UPDATE `tabDlits Customer Followup`
+        SET aging_days = 0
+        WHERE task_status IN %s
+    """, (closed,))
+
+    # 3. Customer master — active status: increment; closed status: zero
+    frappe.db.sql("""
+        UPDATE `tabCustomer`
+        SET custom_followup_aging = DATEDIFF(CURDATE(), custom_last_followup_date)
+        WHERE custom_last_followup_status NOT IN %s
+          AND custom_last_followup_date IS NOT NULL
+          AND custom_last_followup_status IS NOT NULL
+          AND custom_last_followup_status != ''
+    """, (closed,))
+
+    frappe.db.sql("""
+        UPDATE `tabCustomer`
+        SET custom_followup_aging = 0
+        WHERE custom_last_followup_status IN %s
+    """, (closed,))
+
+    # 4. Linked Sales Invoices — update aging from their followup doc (active only)
+    frappe.db.sql("""
+        UPDATE `tabSales Invoice` si
+        INNER JOIN `tabDlits Followup Linked Document` ld
+            ON ld.document_name = si.name AND ld.document_type = 'Sales Invoice'
+        INNER JOIN `tabDlits Customer Followup` f ON f.name = ld.parent
+        SET si.custom_followup_aging_days = DATEDIFF(CURDATE(), f.last_contact_date)
+        WHERE f.task_status NOT IN %s
+          AND f.last_contact_date IS NOT NULL
+    """, (closed,))
+
+    # 5. Linked Quotations — update aging from their followup doc (active only)
+    frappe.db.sql("""
+        UPDATE `tabQuotation` qt
+        INNER JOIN `tabDlits Followup Linked Document` ld
+            ON ld.document_name = qt.name AND ld.document_type = 'Quotation'
+        INNER JOIN `tabDlits Customer Followup` f ON f.name = ld.parent
+        SET qt.custom_followup_aging_days = DATEDIFF(CURDATE(), f.last_contact_date)
+        WHERE f.task_status NOT IN %s
+          AND f.last_contact_date IS NOT NULL
+    """, (closed,))
+
+    frappe.db.commit()
 
 
 def send_followup_reminders():

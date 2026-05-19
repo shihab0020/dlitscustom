@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "sales_invoice",
+  "is_return",
   "posting_date",
   "customer",
   "col_break_1",
@@ -14,11 +15,11 @@
   "tax_amount",
   "paid_amount",
   "outstanding_amount",
-  "return_amount",
   "col_break_2",
   "profit",
   "commission_amount",
-  "is_marked"
+  "is_marked",
+  "is_gp_marked"
  ],
  "fields": [
   {
@@ -29,6 +30,14 @@
    "options": "Sales Invoice",
    "read_only": 1,
    "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_return",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Return",
+   "read_only": 1
   },
   {
    "fieldname": "posting_date",
@@ -84,14 +93,6 @@
    "read_only": 1
   },
   {
-   "default": "0",
-   "fieldname": "return_amount",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "Return Amount",
-   "read_only": 1
-  },
-  {
    "fieldname": "col_break_2",
    "fieldtype": "Column Break"
   },
@@ -113,6 +114,14 @@
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Marked"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_gp_marked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "GP Marked",
+   "print_hide": 1
   }
  ],
  "istable": 1,

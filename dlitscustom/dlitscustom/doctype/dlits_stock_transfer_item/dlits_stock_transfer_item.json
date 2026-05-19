@@ -6,14 +6,10 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
-  "item_name",
+  "description",
   "qty",
   "uom",
   "delivered_qty",
-  "received_qty",
-  "col_break_wh",
-  "from_warehouse",
-  "to_warehouse",
   "sec_remarks",
   "remarks"
  ],
@@ -30,12 +26,12 @@
   },
   {
    "columns": 3,
-   "fetch_from": "item_code.item_name",
+   "fetch_from": "item_code.description",
    "fetch_if_empty": 1,
-   "fieldname": "item_name",
+   "fieldname": "description",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Item Name",
+   "label": "Description",
    "read_only": 1
   },
   {
@@ -63,29 +59,6 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Delivered Qty"
-  },
-  {
-   "columns": 1,
-   "fieldname": "received_qty",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Received Qty"
-  },
-  {
-   "fieldname": "col_break_wh",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "from_warehouse",
-   "fieldtype": "Link",
-   "label": "From Warehouse",
-   "options": "Warehouse"
-  },
-  {
-   "fieldname": "to_warehouse",
-   "fieldtype": "Link",
-   "label": "To Warehouse",
-   "options": "Warehouse"
   },
   {
    "collapsible": 1,

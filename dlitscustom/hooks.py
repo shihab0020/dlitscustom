@@ -47,13 +47,15 @@ doctype_js = {
     "Journal Entry": "public/js/journal_entry_dlits.js",
     "Customer": "public/js/customer.js",
     "Quotation": "public/js/quotation.js",
-    "Dlits Sales Partner": "public/js/dlits_sales_partner.js"
+    "Purchase Receipt":   "public/js/purchase_receipt.js",
 }
 
 doctype_list_js = {
     "Dlits Stock Transfer Request": "public/js/dlits_stock_transfer_request_list.js",
-    "Customer":      "public/js/customer_list.js",
-    "Sales Invoice": "public/js/sales_invoice_list.js"
+    "Customer":          "public/js/customer_list.js",
+    "Sales Invoice":     "public/js/sales_invoice_list.js",
+    "Quotation":         "public/js/quotation_list.js",
+    "Purchase Receipt":  "public/js/purchase_receipt_list.js",
 }
 
 # Customer Followup related document events
@@ -158,6 +160,10 @@ doc_events = {
     },
     "Quotation": {
         "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
+    },
+    "Purchase Invoice": {
+        "before_save": "dlitscustom.override.purchase_invoice_bill_no.auto_suffix_duplicate_bill_no",
+        "on_submit": "dlitscustom.override.purchase_invoice_status.on_purchase_invoice_submit"
     }
 }
 
@@ -184,6 +190,24 @@ fixtures = [
                 "dlits_is_me"
             ]]
         ]
+    },
+    {
+        "dt": "Custom Field",
+        "filters": [
+            ["dt", "=", "Purchase Receipt"],
+            ["fieldname", "in", ["custom_invoice_status"]]
+        ]
+    },
+    {
+        "dt": "Custom Field",
+        "filters": [
+            ["dt", "=", "Stock Entry"],
+            ["fieldname", "in", ["custom_dlitsstocktransferrequest"]]
+        ]
+    },
+    {
+        "doctype": "Workflow",
+        "filters": [["name", "=", "Dlits Stock Transfer"]]
     }
 ]
 

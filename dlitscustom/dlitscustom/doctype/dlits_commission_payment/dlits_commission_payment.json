@@ -5,35 +5,48 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "payment_entry",
+  "reference_type",
+  "reference_doctype",
+  "reference_name",
   "payment_date",
-  "payment_type",
   "col_break_1",
   "amount",
   "remarks"
  ],
  "fields": [
   {
-   "fieldname": "payment_entry",
-   "fieldtype": "Link",
+   "fieldname": "reference_type",
+   "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Payment Entry",
-   "options": "Payment Entry",
-   "reqd": 1
+   "label": "Type",
+   "options": "\nPayment Entry\nCredit Note\nAdditional Salary",
+   "reqd": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Reference Doctype",
+   "options": "DocType",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Reference",
+   "options": "reference_doctype",
+   "reqd": 1,
+   "columns": 3
   },
   {
    "fieldname": "payment_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Payment Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "payment_type",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Type",
-   "read_only": 1
+   "label": "Date",
+   "read_only": 1,
+   "columns": 2
   },
   {
    "fieldname": "col_break_1",
@@ -44,7 +57,7 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount",
-   "read_only": 1
+   "columns": 2
   },
   {
    "fieldname": "remarks",

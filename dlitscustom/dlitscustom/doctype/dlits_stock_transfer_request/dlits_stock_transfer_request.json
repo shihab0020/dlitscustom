@@ -38,6 +38,10 @@
   "received_date",
   "completion_date",
   "stock_entry",
+  "total_qty",
+  "total_delivered_qty",
+  "total_received_qty",
+  "qty_status",
   "amended_from"
  ],
  "fields": [
@@ -267,6 +271,39 @@
    "label": "Created Stock Entry",
    "no_copy": 1,
    "options": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Total Qty",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_delivered_qty",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Total Delivered Qty",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_received_qty",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Total Received Qty",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "qty_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Item Status",
+   "no_copy": 1,
+   "options": "\nAll Delivered\nPartial Delivered",
    "read_only": 1
   },
   {

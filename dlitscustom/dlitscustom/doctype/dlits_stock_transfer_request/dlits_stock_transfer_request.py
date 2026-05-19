@@ -7,6 +7,7 @@ from frappe import _
 class DlitsStockTransferRequest(Document):
 	def before_save(self):
 		self._set_title()
+		self._update_qty_totals()
 
 	def validate(self):
 		self._validate_items()
@@ -44,11 +45,33 @@ class DlitsStockTransferRequest(Document):
 				if frappe.session.user not in allowed:
 					frappe.throw(_("Only an assigned Sending Warehouse User can mark as Delivered."))
 			self.delivery_date = today()
+			_warn_qty_mismatch(
+				self.items,
+				check_field="delivered_qty",
+				base_field="qty",
+				check_label=_("Delivered Qty"),
+				base_label=_("Requested Qty"),
+			)
 
 		elif new_status == "Received":
 			if not is_approver and frappe.session.user != self.requested_by:
 				frappe.throw(_("Only the requester ({0}) can confirm receipt.").format(self.requested_by))
 			self.received_date = today()
+
+	def before_submit(self):
+		missing = [
+			f"Row {row.idx} – {row.item_code}"
+			for row in self.items
+			if not row.delivered_qty or row.delivered_qty <= 0
+		]
+		if missing:
+			frappe.throw(
+				_("Cannot submit: Delivered Qty must be filled for all items before submitting.<br><br>{0}").format(
+					"<br>".join(missing)
+				),
+				title=_("Missing Delivered Qty"),
+			)
+		_warn_submit_quantities(self)
 
 	def on_submit(self):
 		se = _create_stock_entry(self)
@@ -62,6 +85,18 @@ class DlitsStockTransferRequest(Document):
 					self.stock_entry
 				)
 			)
+
+	def _update_qty_totals(self):
+		self.total_qty = sum(r.qty or 0 for r in self.items)
+		self.total_delivered_qty = sum(r.delivered_qty or 0 for r in self.items)
+
+		tq = self.total_qty or 0
+		td = self.total_delivered_qty or 0
+
+		if self.status in ("Delivered", "Received", "Completed"):
+			self.qty_status = "All Delivered" if (tq and td >= tq) else ("Partial Delivered" if td > 0 else "")
+		else:
+			self.qty_status = ""
 
 	def _set_title(self):
 		tech = self.receiver_name or self.requested_by or ""
@@ -79,6 +114,67 @@ class DlitsStockTransferRequest(Document):
 				)
 
 
+# ─── Qty helpers ──────────────────────────────────────────────────────────────
+
+def _get_effective_qty(row):
+	"""Return the qty that will be transferred — always delivered_qty."""
+	return row.delivered_qty or 0
+
+
+def _warn_qty_mismatch(items, check_field, base_field, check_label, base_label):
+	"""Show an orange warning if any row has a filled check_field that differs from base_field."""
+	rows = []
+	for row in items:
+		check_val = getattr(row, check_field) or 0
+		if not check_val:
+			continue
+		base_val = getattr(row, base_field) or 0
+		if check_val != base_val:
+			rows.append(
+				f"<b>Row {row.idx} – {row.item_code}:</b> "
+				f"{base_label} = {base_val} &nbsp;→&nbsp; {check_label} = <b>{check_val}</b>"
+			)
+	if rows:
+		frappe.msgprint(
+			_("Quantity mismatch detected — please review before proceeding:<br><br>{0}").format(
+				"<br>".join(rows)
+			),
+			title=_("Qty Mismatch"),
+			indicator="orange",
+		)
+
+
+def _warn_submit_quantities(doc):
+	"""Before submit: show a summary of the exact quantities that will be transferred."""
+	has_mismatch = False
+	rows = []
+	for row in doc.items:
+		effective = _get_effective_qty(row)
+		mismatch = effective != row.qty
+		if mismatch:
+			has_mismatch = True
+		label = (
+			f"<b>Row {row.idx} – {row.item_code}:</b> "
+			f"Requested {row.qty} → "
+			f"<b style='color:{'orange' if mismatch else 'green'}'>"
+			f"Will transfer {effective} {row.uom or ''}</b>"
+		)
+		rows.append(label)
+
+	indicator = "orange" if has_mismatch else "blue"
+	note = (
+		_("<br><br><b>⚠ Some quantities differ from the original request.</b>")
+		if has_mismatch else ""
+	)
+	frappe.msgprint(
+		_("Stock Entry will be created with the following quantities:<br><br>{0}{1}").format(
+			"<br>".join(rows), note
+		),
+		title=_("Confirm Transfer Quantities"),
+		indicator=indicator,
+	)
+
+
 # ─── Stock Entry creation ──────────────────────────────────────────────────────
 
 def _create_stock_entry(doc):
@@ -86,18 +182,15 @@ def _create_stock_entry(doc):
 	se.stock_entry_type = "Material Transfer"
 	se.company = doc.company
 	se.posting_date = today()
-	se.remarks = f"Dlits Stock Transfer Request: {doc.name}"
+	se.remarks = f"Dlits Stock Transfer Request: {doc.name} [{doc.request_type}]"
+
+	s_wh = doc.dispatch_warehouse
+	t_wh = doc.deliver_to_warehouse
 
 	for row in doc.items:
-		effective_qty = row.received_qty or row.delivered_qty or row.qty
+		effective_qty = _get_effective_qty(row)
 		if not effective_qty or effective_qty <= 0:
 			continue
-
-		s_wh = row.from_warehouse or doc.dispatch_warehouse
-		t_wh = row.to_warehouse or doc.deliver_to_warehouse
-
-		if doc.request_type == "Return":
-			s_wh, t_wh = t_wh, s_wh
 
 		conversion_factor = (
 			frappe.db.get_value(
@@ -121,6 +214,13 @@ def _create_stock_entry(doc):
 		frappe.throw(_("No valid items found to transfer."))
 
 	se.set_missing_values()
+
+	# Restore warehouses — set_missing_values() may overwrite them with item defaults
+	for item in se.items:
+		item.s_warehouse = s_wh
+		item.t_warehouse = t_wh
+
+	se.custom_dlitsstocktransferrequest = doc.name
 	se.insert(ignore_permissions=True)
 	se.submit()
 	return se
@@ -151,10 +251,9 @@ def make_stock_transfer_from_so(source_name, target_doc=None):
 				"doctype": "Dlits Stock Transfer Item",
 				"field_map": {
 					"item_code": "item_code",
-					"item_name": "item_name",
+					"description": "description",
 					"qty": "qty",
 					"uom": "uom",
-					"description": "remarks",
 				},
 			},
 		},
@@ -180,10 +279,9 @@ def get_items_from_sales_order(sales_order):
 	return [
 		{
 			"item_code": row.item_code,
-			"item_name": row.item_name,
+			"description": row.description or "",
 			"qty": row.qty,
 			"uom": row.uom,
-			"remarks": row.description or "",
 		}
 		for row in so.items
 	]

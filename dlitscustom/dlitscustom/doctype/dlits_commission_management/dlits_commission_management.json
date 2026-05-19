@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "sales_partner",
+  "is_group_partner",
   "commission_rate",
   "status",
   "col_break_header",
@@ -17,12 +18,12 @@
   "col_break_filters",
   "item",
   "target_amount",
-  "avoid_draft_invoices",
-  "avoid_non_paid_invoices",
-  "avoid_partial_paid",
-  "deduct_return",
   "col_break_filter_checks",
   "service_cost_percentage",
+  "exclude_unpaid_invoices",
+  "exclude_partial_invoices",
+  "exclude_unpaid_returns",
+  "exclude_partial_returns",
   "section_invoices",
   "invoices",
   "section_totals",
@@ -47,6 +48,15 @@
    "label": "Dlits Sales Partner",
    "options": "Dlits Sales Partner",
    "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group_partner",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Group Partner",
+   "print_hide": 1,
+   "read_only": 1
   },
   {
    "fieldname": "commission_rate",
@@ -90,6 +100,7 @@
    "fieldname": "cost_center",
    "fieldtype": "Link",
    "label": "Cost Center",
+   "mandatory_depends_on": "eval:doc.is_group_partner",
    "options": "Cost Center"
   },
   {
@@ -119,35 +130,34 @@
   },
   {
    "default": "75",
-   "description": "For service items (no stock valuation), estimated cost as % of net amount. Stock items use actual valuation rate.",
+   "description": "For service items (no stock valuation), estimated cost as % of net amount. Stock items use actual incoming rate.",
    "fieldname": "service_cost_percentage",
    "fieldtype": "Percent",
    "label": "Service Cost % (for profit estimation)"
   },
   {
    "default": "1",
-   "fieldname": "avoid_draft_invoices",
-   "fieldtype": "Check",
-   "label": "Exclude Draft Invoices"
-  },
-  {
-   "default": "1",
-   "description": "Deduct any sales return amounts from commission base (regardless of payment status)",
-   "fieldname": "deduct_return",
-   "fieldtype": "Check",
-   "label": "Deduct Returns"
-  },
-  {
-   "default": "1",
-   "fieldname": "avoid_non_paid_invoices",
+   "fieldname": "exclude_unpaid_invoices",
    "fieldtype": "Check",
    "label": "Exclude Fully Unpaid Invoices"
   },
   {
    "default": "1",
-   "fieldname": "avoid_partial_paid",
+   "fieldname": "exclude_partial_invoices",
    "fieldtype": "Check",
    "label": "Exclude Partially Paid Invoices"
+  },
+  {
+   "default": "0",
+   "fieldname": "exclude_unpaid_returns",
+   "fieldtype": "Check",
+   "label": "Exclude Fully Unreconciled Returns"
+  },
+  {
+   "default": "0",
+   "fieldname": "exclude_partial_returns",
+   "fieldtype": "Check",
+   "label": "Exclude Partially Reconciled Returns"
   },
   {
    "fieldname": "section_invoices",

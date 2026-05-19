@@ -5,6 +5,20 @@ frappe.ui.form.on("Dlits Stock Transfer Request", {
 	refresh(frm) {
 		frm.trigger("render_status_badge");
 		frm.trigger("setup_get_items_button");
+		frm.trigger("control_delivered_qty_access");
+	},
+
+	control_delivered_qty_access(frm) {
+		const is_approver = frappe.user.has_role("Shb Stock Transfer Approver");
+		const dispatch_users = (frm.doc.dispatch_users || []).map(d => d.user);
+		const can_edit = is_approver
+			|| frappe.session.user === frm.doc.approved_by
+			|| dispatch_users.includes(frappe.session.user);
+
+		frm.fields_dict.items.grid.update_docfield_property(
+			"delivered_qty", "read_only", can_edit ? 0 : 1
+		);
+		frm.fields_dict.items.grid.refresh();
 	},
 
 	render_status_badge(frm) {
@@ -46,12 +60,9 @@ frappe.ui.form.on("Dlits Stock Transfer Request", {
 						r.message.forEach(item => {
 							const row = frm.add_child("items");
 							frappe.model.set_value(row.doctype, row.name, "item_code", item.item_code);
-							frappe.model.set_value(row.doctype, row.name, "item_name", item.item_name);
+							frappe.model.set_value(row.doctype, row.name, "description", item.description);
 							frappe.model.set_value(row.doctype, row.name, "qty", item.qty);
 							frappe.model.set_value(row.doctype, row.name, "uom", item.uom);
-							if (item.remarks) {
-								frappe.model.set_value(row.doctype, row.name, "remarks", item.remarks);
-							}
 						});
 						frm.refresh_field("items");
 						frappe.show_alert({
