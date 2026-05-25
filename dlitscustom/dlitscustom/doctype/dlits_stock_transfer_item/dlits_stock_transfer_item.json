@@ -25,12 +25,10 @@
    "search_index": 1
   },
   {
-   "columns": 3,
    "fetch_from": "item_code.description",
    "fetch_if_empty": 1,
    "fieldname": "description",
-   "fieldtype": "Data",
-   "in_list_view": 1,
+   "fieldtype": "Small Text",
    "label": "Description",
    "read_only": 1
   },

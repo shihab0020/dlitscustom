@@ -162,7 +162,7 @@ doc_events = {
         "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
     },
     "Purchase Invoice": {
-        "before_save": "dlitscustom.override.purchase_invoice_bill_no.auto_suffix_duplicate_bill_no",
+        "before_submit": "dlitscustom.override.purchase_invoice_bill_no.prevent_duplicate_bill_no",
         "on_submit": "dlitscustom.override.purchase_invoice_status.on_purchase_invoice_submit"
     }
 }
