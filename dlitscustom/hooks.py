@@ -168,7 +168,44 @@ doc_events = {
 }
 
 fixtures = [
-    {"doctype": "Property Setter"},
+    {
+        "doctype": "Property Setter",
+        "filters": [["name", "in", [
+            # Dlits own doctypes
+            "Dlits Commission Management-naming_series-options",
+            "Dlits Sales Partner-partner_name-unique",
+            "Dlits Sales Partner-partner_type-default",
+            "Dlits Sales Partner-partner_name-in_list_view",
+            "Dlits Sales Partner-commission_rate-in_list_view",
+            "Dlits Sales Partner-partner_type-in_list_view",
+            "Dlits Sales Partner-status-in_list_view",
+            "Dlits Sales Partner-user-in_list_view",
+            "Dlits Sales Partner-phone-reqd",
+            "Dlits Stock Transfer Request-naming_series-options",
+            "Dlits Stock Transfer Request-deliver_to_warehouse-ignore_user_permissions",
+            "Dlits Stock Transfer Request-dispatch_warehouse-ignore_user_permissions",
+            "Dlits Stock Transfer Request-main-default_print_format",
+            "Dlits Stock Transfer Request-main-links_order",
+            "Dlits Followup Participant-main-field_order",
+            "Dlits Followup Participant-main-naming_rule",
+            "Dlits Followup Participant-main-autoname",
+            # Default print formats
+            "Sales Invoice-main-default_print_format",
+            "Quotation-main-default_print_format",
+            "Sales Order-main-default_print_format",
+            "Delivery Note-main-default_print_format",
+            # Followup custom fields (owned by dlitscustom)
+            "Customer-custom_last_followup_status-in_list_view",
+            "Sales Invoice-custom_last_followup_date-in_list_view",
+            "Sales Invoice-custom_last_followup_status-in_list_view",
+            "Sales Invoice-custom_reference_to_customer-in_list_view",
+            "Quotation-custom_last_followup_status-in_list_view",
+            "Quotation-custom_reference_to_customer-in_list_view",
+            "Sales Order-custom_reference_to_customer-in_list_view",
+            # Stock Entry integration (custom_dlitsstocktransfer fields)
+            "Stock Entry-main-field_order",
+        ]]]
+    },
     {"doctype": "DocType", "filters": [["name", "in", ["Pricing Rule Item Code Dlits Test"]]]},
     {
         "dt": "Custom Field",
