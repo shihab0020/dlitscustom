@@ -30,13 +30,19 @@ def pricing_rule_verify_dlits(doc, method=None):
         item_valuation_rate = float(item_master.get("valuation_rate") or 0) * conversion_factor
         last_purchase_rate = float(item_master.get("last_purchase_rate") or 0) * conversion_factor
 
-        # E. Both cost references are zero — cannot verify
-        if not item_valuation_rate and not last_purchase_rate:
+        # E. Valuation rate must be set — zero means the item has not been properly received/valued
+        if not item_valuation_rate:
             errors.append(
-                f"Item {frappe.bold(item_code)}: Both Valuation Rate and Last Purchase Rate are zero. "
-                f"Cannot proceed without reference pricing."
+                f"Item {frappe.bold(item_code)}: Valuation Rate is zero or not set. "
+                f"Receive the item into stock before creating this document."
             )
             continue
+
+        # F. Last purchase rate missing — warn but do not block
+        if not last_purchase_rate:
+            errors.append(
+                f"Item {frappe.bold(item_code)}: Last Purchase Rate is zero or not set."
+            )
 
         # A. Zero price not allowed
         if not rate:
