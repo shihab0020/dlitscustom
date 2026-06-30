@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "creation": "2026-06-30 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "return_invoice",
+  "return_date",
+  "return_amount",
+  "col_break_1",
+  "review_status",
+  "deduction_applied",
+  "reviewed_by",
+  "review_date",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "return_invoice",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Return Invoice",
+   "options": "Sales Invoice",
+   "reqd": 1
+  },
+  {
+   "fieldname": "return_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Return Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "return_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Return Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "review_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Review Status",
+   "options": "Pending\nReviewed"
+  },
+  {
+   "fieldname": "deduction_applied",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Deduction Applied"
+  },
+  {
+   "fieldname": "reviewed_by",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "review_date",
+   "fieldtype": "Date",
+   "label": "Review Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-30 00:00:00",
+ "modified_by": "Administrator",
+ "module": "dlitscustom",
+ "name": "Dlits Commission Return Review",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

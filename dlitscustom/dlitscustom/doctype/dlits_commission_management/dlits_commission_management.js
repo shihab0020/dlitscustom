@@ -1,3 +1,180 @@
+// ── Standalone dialog helpers (no frm.trigger needed) ─────────────────────
+
+function _show_additional_salary_dialog(frm, info) {
+    let d = new frappe.ui.Dialog({
+        title: __("Commission via Additional Salary (Payroll)"),
+        fields: [
+            {
+                fieldname: "employee",
+                label: __("Employee"),
+                fieldtype: "Link",
+                options: "Employee",
+                default: info.employee || "",
+                read_only: info.employee ? 1 : 0,
+                reqd: 1,
+                description: __("Employee linked to this partner's ERPNext user")
+            },
+            { fieldtype: "Column Break" },
+            {
+                fieldname: "payroll_date",
+                label: __("Payroll Date"),
+                fieldtype: "Date",
+                default: frappe.datetime.get_today(),
+                reqd: 1,
+                description: __("Commission will appear in payroll for this date")
+            },
+            { fieldtype: "Section Break" },
+            {
+                fieldname: "salary_component",
+                label: __("Salary Component"),
+                fieldtype: "Link",
+                options: "Salary Component",
+                default: "Sales Commission",
+                reqd: 1,
+                get_query: function() { return { filters: { type: "Earning" } }; },
+                description: __("Must be an Earning type component")
+            },
+            { fieldtype: "Column Break" },
+            {
+                fieldname: "amount",
+                label: __("Amount"),
+                fieldtype: "Currency",
+                default: frm.doc.balance_commission,
+                reqd: 1
+            }
+        ],
+        primary_action_label: __("Create Additional Salary"),
+        primary_action: function(vals) {
+            frappe.call({
+                method: "dlitscustom.dlitscustom.doctype.dlits_commission_management.dlits_commission_management.create_additional_salary_payment",
+                args: {
+                    name:             frm.doc.name,
+                    employee:         vals.employee,
+                    salary_component: vals.salary_component,
+                    payroll_date:     vals.payroll_date,
+                    amount:           vals.amount,
+                },
+                freeze: true,
+                freeze_message: __("Creating Additional Salary..."),
+                callback: function(r) {
+                    if (!r.exc) {
+                        d.hide();
+                        frm.reload_doc();
+                        frappe.show_alert({ message: __("Additional Salary created: {0}", [r.message]), indicator: "green" });
+                    }
+                }
+            });
+        }
+    });
+    d.show();
+}
+
+function _show_je_dialog(frm) {
+    let d = new frappe.ui.Dialog({
+        title: __("Commission Payment via Journal Entry"),
+        fields: [
+            {
+                fieldname: "amount",
+                label: __("Amount"),
+                fieldtype: "Currency",
+                default: frm.doc.balance_commission,
+                reqd: 1
+            },
+            { fieldtype: "Column Break" },
+            {
+                fieldname: "payment_date",
+                label: __("Payment Date"),
+                fieldtype: "Date",
+                default: frappe.datetime.get_today(),
+                reqd: 1
+            },
+            { fieldtype: "Section Break", label: __("Accounts") },
+            {
+                fieldname: "expense_account",
+                label: __("Commission Expense Account"),
+                fieldtype: "Link",
+                options: "Account",
+                reqd: 1,
+                description: __("Debit — e.g. Sales Commission Expense"),
+                get_query: function() { return { filters: { root_type: "Expense", is_group: 0 } }; }
+            },
+            { fieldtype: "Column Break" },
+            {
+                fieldname: "payment_account",
+                label: __("Pay From (Bank / Cash)"),
+                fieldtype: "Link",
+                options: "Account",
+                reqd: 1,
+                description: __("Credit — money leaves this account"),
+                get_query: function() { return { filters: { account_type: ["in", ["Bank", "Cash"]], is_group: 0 } }; }
+            },
+            { fieldtype: "Section Break", label: __("Reference") },
+            {
+                fieldname: "cheque_no",
+                label: __("Reference / Cheque No"),
+                fieldtype: "Data"
+            }
+        ],
+        primary_action_label: __("Create Journal Entry"),
+        primary_action: function(vals) {
+            frappe.call({
+                method: "dlitscustom.dlitscustom.doctype.dlits_commission_management.dlits_commission_management.create_payment_journal_entry",
+                args: {
+                    name:            frm.doc.name,
+                    payment_date:    vals.payment_date,
+                    expense_account: vals.expense_account,
+                    payment_account: vals.payment_account,
+                    amount:          vals.amount,
+                    cheque_no:       vals.cheque_no || null,
+                },
+                freeze: true,
+                freeze_message: __("Creating Journal Entry..."),
+                callback: function(r) {
+                    if (!r.exc) {
+                        d.hide();
+                        frm.reload_doc();
+                        frappe.show_alert({ message: __("Journal Entry created: {0}", [r.message]), indicator: "green" });
+                    }
+                }
+            });
+        }
+    });
+    d.show();
+}
+
+function _show_payment_method_choice(frm, info) {
+    let choice_d = new frappe.ui.Dialog({
+        title: __("How to pay commission to {0}?", [frm.doc.sales_partner]),
+        fields: [
+            {
+                fieldname: "method",
+                label: __("Payment Method"),
+                fieldtype: "Select",
+                options: "Additional Salary (Payroll)\nJournal Entry (Direct Bank Transfer)",
+                default: "Additional Salary (Payroll)",
+                reqd: 1,
+                description: __(
+                    "<b>Additional Salary:</b> Included in next payroll run. Recommended for employees.<br>"
+                    + "<b>Journal Entry:</b> Direct bank payment. For bank transfers outside payroll."
+                )
+            }
+        ],
+        primary_action_label: __("Continue"),
+        primary_action: function(vals) {
+            choice_d.hide();
+            if (vals.method === "Additional Salary (Payroll)") {
+                _show_additional_salary_dialog(frm, info);
+            } else {
+                _show_je_dialog(frm);
+            }
+        }
+    });
+    choice_d.show();
+}
+
+
+// ── Main form events ───────────────────────────────────────────────────────
+
 frappe.ui.form.on("Dlits Commission Management", {
 
     refresh: function(frm) {
@@ -6,7 +183,75 @@ frappe.ui.form.on("Dlits Commission Management", {
                 frm.trigger("do_calculate");
             }).addClass("btn-primary");
         }
+
         frm.trigger("_update_group_ui");
+
+        // ── Approval actions ────────────────────────────────────────────
+        if (frm.doc.docstatus === 1 && frappe.user.has_role("Shb Commission Approver")) {
+
+            if (frm.doc.status === "Requested for Approval" || frm.doc.status === "Approved") {
+                frm.add_custom_button(__("Reject"), function() {
+                    frappe.prompt(
+                        [{ label: __("Rejection Reason"), fieldname: "reason", fieldtype: "Small Text", reqd: 1 }],
+                        function(vals) {
+                            frappe.call({
+                                method: "dlitscustom.dlitscustom.doctype.dlits_commission_management.dlits_commission_management.reject_commission",
+                                args: { name: frm.doc.name, rejection_reason: vals.reason },
+                                callback: function(r) {
+                                    if (!r.exc) {
+                                        frm.reload_doc();
+                                        frappe.show_alert({ message: __("Commission Rejected"), indicator: "red" });
+                                    }
+                                }
+                            });
+                        },
+                        __("Reject Commission"), __("Reject")
+                    );
+                }, __("Actions")).addClass("btn-danger");
+            }
+
+            if (frm.doc.status === "Requested for Approval") {
+                frm.add_custom_button(__("Approve"), function() {
+                    frappe.confirm(
+                        __("Approve commission for <b>{0}</b>?", [frm.doc.sales_partner]),
+                        function() {
+                            frappe.call({
+                                method: "dlitscustom.dlitscustom.doctype.dlits_commission_management.dlits_commission_management.approve_commission",
+                                args: { name: frm.doc.name },
+                                callback: function(r) {
+                                    if (!r.exc) {
+                                        frm.reload_doc();
+                                        frappe.show_alert({ message: __("Commission Approved"), indicator: "green" });
+                                    }
+                                }
+                            });
+                        }
+                    );
+                }, __("Actions")).addClass("btn-success");
+            }
+        }
+
+        // ── Make Payment button ─────────────────────────────────────────
+        if (frm.doc.docstatus === 1
+                && frm.doc.status === "Approved"
+                && flt(frm.doc.balance_commission) > 0
+                && (frappe.user.has_role("Shb Commission Approver") || frappe.user.has_role("Accounts Manager"))) {
+            frm.add_custom_button(__("Make Payment"), function() {
+                frappe.call({
+                    method: "dlitscustom.dlitscustom.doctype.dlits_commission_management.dlits_commission_management.get_partner_payment_info",
+                    args: { sales_partner: frm.doc.sales_partner },
+                    callback: function(r) {
+                        if (r.exc) return;
+                        const info = r.message || {};
+                        if (info.partner_type === "Internal User" && info.employee) {
+                            _show_payment_method_choice(frm, info);
+                        } else {
+                            _show_je_dialog(frm);
+                        }
+                    }
+                });
+            }, __("Actions")).addClass("btn-primary");
+        }
     },
 
     sales_partner: function(frm) {
@@ -31,10 +276,7 @@ frappe.ui.form.on("Dlits Commission Management", {
     _update_group_ui: function(frm) {
         if (frm.doc.is_group_partner) {
             let sec = frm.get_field("section_filters");
-            if (sec && sec.df) {
-                sec.df.collapsible = 0;
-                sec.df.collapsed   = 0;
-            }
+            if (sec && sec.df) { sec.df.collapsible = 0; sec.df.collapsed = 0; }
             frm.refresh_field("section_filters");
             frm.set_df_property("cost_center", "bold", 1);
         } else {
@@ -75,9 +317,7 @@ frappe.ui.form.on("Dlits Commission Management", {
             freeze_message: __("Fetching invoices..."),
             callback: function(r) {
                 if (r.exc) return;
-
                 frm.clear_table("invoices");
-
                 (r.message || []).forEach(function(inv) {
                     let row = frm.add_child("invoices");
                     row.sales_invoice      = inv.sales_invoice;
@@ -94,14 +334,12 @@ frappe.ui.form.on("Dlits Commission Management", {
                     row.is_marked          = 0;
                     row.is_gp_marked       = 0;
                 });
-
                 frm.refresh_field("invoices");
                 frm.trigger("recalculate_totals");
                 frm.set_value("status", "Calculated");
 
                 let regular = (r.message || []).filter(i => !i.is_return).length;
                 let returns  = (r.message || []).filter(i =>  i.is_return).length;
-
                 if (!r.message || r.message.length === 0) {
                     frappe.msgprint(__("No invoices found for the selected criteria."));
                 } else {
@@ -128,18 +366,16 @@ frappe.ui.form.on("Dlits Commission Management", {
         frm.set_value("total_commission",   total_commission);
 
         let total_paid = 0;
-        (frm.doc.payments || []).forEach(function(row) {
-            total_paid += flt(row.amount);
-        });
+        (frm.doc.payments || []).forEach(function(row) { total_paid += flt(row.amount); });
         frm.set_value("total_paid",         total_paid);
         frm.set_value("balance_commission", total_commission - total_paid);
     }
 });
 
 frappe.ui.form.on("Dlits Commission Invoice", {
-    profit: function(frm)            { frm.trigger("recalculate_totals"); },
-    commission_amount: function(frm) { frm.trigger("recalculate_totals"); },
-    invoices_remove: function(frm)   { frm.trigger("recalculate_totals"); }
+    profit:           function(frm) { frm.trigger("recalculate_totals"); },
+    commission_amount:function(frm) { frm.trigger("recalculate_totals"); },
+    invoices_remove:  function(frm) { frm.trigger("recalculate_totals"); }
 });
 
 frappe.ui.form.on("Dlits Commission Payment", {
@@ -147,72 +383,54 @@ frappe.ui.form.on("Dlits Commission Payment", {
     reference_type: function(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
         const doctype_map = {
+            "Additional Salary": "Additional Salary",
+            "Journal Entry":     "Journal Entry",
             "Payment Entry":     "Payment Entry",
-            "Credit Note":       "Sales Invoice",
-            "Additional Salary": "Additional Salary"
         };
         const doctype = doctype_map[row.reference_type] || "";
         frappe.model.set_value(cdt, cdn, "reference_doctype", doctype);
-        frappe.model.set_value(cdt, cdn, "reference_name", "");
-        frappe.model.set_value(cdt, cdn, "payment_date", "");
-        frappe.model.set_value(cdt, cdn, "amount", 0);
-
-        // For Credit Note: filter to return invoices only
-        if (row.reference_type === "Credit Note") {
-            frm.set_query("reference_name", "payments", function() {
-                return { filters: { is_return: 1, docstatus: 1 } };
-            });
-        } else if (row.reference_type === "Payment Entry") {
-            frm.set_query("reference_name", "payments", function() {
-                return { filters: { docstatus: 1 } };
-            });
-        } else if (row.reference_type === "Additional Salary") {
-            frm.set_query("reference_name", "payments", function() {
-                return { filters: { docstatus: 1 } };
-            });
-        } else {
-            frm.set_query("reference_name", "payments", function() { return {}; });
-        }
+        frappe.model.set_value(cdt, cdn, "reference_name",    "");
+        frappe.model.set_value(cdt, cdn, "payment_date",      "");
+        frappe.model.set_value(cdt, cdn, "amount",            0);
+        frm.set_query("reference_name", "payments", function() {
+            return { filters: { docstatus: 1 } };
+        });
     },
 
     reference_name: function(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
         if (!row.reference_name || !row.reference_type) return;
 
-        if (row.reference_type === "Payment Entry") {
-            frappe.db.get_value("Payment Entry", row.reference_name,
-                ["posting_date", "paid_amount"],
-                function(r) {
-                    if (!r) return;
-                    frappe.model.set_value(cdt, cdn, "payment_date", r.posting_date);
-                    frappe.model.set_value(cdt, cdn, "amount", r.paid_amount);
-                    frm.trigger("recalculate_totals");
-                }
-            );
-        } else if (row.reference_type === "Credit Note") {
-            frappe.db.get_value("Sales Invoice", row.reference_name,
-                ["posting_date", "grand_total"],
-                function(r) {
-                    if (!r) return;
-                    frappe.model.set_value(cdt, cdn, "payment_date", r.posting_date);
-                    // Credit note grand_total is negative; store as positive amount
-                    frappe.model.set_value(cdt, cdn, "amount", Math.abs(r.grand_total));
-                    frm.trigger("recalculate_totals");
-                }
-            );
-        } else if (row.reference_type === "Additional Salary") {
+        if (row.reference_type === "Additional Salary") {
             frappe.db.get_value("Additional Salary", row.reference_name,
-                ["payroll_date", "amount"],
-                function(r) {
+                ["payroll_date", "amount"], function(r) {
                     if (!r) return;
                     frappe.model.set_value(cdt, cdn, "payment_date", r.payroll_date);
-                    frappe.model.set_value(cdt, cdn, "amount", r.amount);
+                    frappe.model.set_value(cdt, cdn, "amount",       r.amount);
+                    frm.trigger("recalculate_totals");
+                }
+            );
+        } else if (row.reference_type === "Journal Entry") {
+            frappe.db.get_value("Journal Entry", row.reference_name,
+                ["posting_date", "total_debit"], function(r) {
+                    if (!r) return;
+                    frappe.model.set_value(cdt, cdn, "payment_date", r.posting_date);
+                    frappe.model.set_value(cdt, cdn, "amount",       r.total_debit);
+                    frm.trigger("recalculate_totals");
+                }
+            );
+        } else if (row.reference_type === "Payment Entry") {
+            frappe.db.get_value("Payment Entry", row.reference_name,
+                ["posting_date", "paid_amount"], function(r) {
+                    if (!r) return;
+                    frappe.model.set_value(cdt, cdn, "payment_date", r.posting_date);
+                    frappe.model.set_value(cdt, cdn, "amount",       r.paid_amount);
                     frm.trigger("recalculate_totals");
                 }
             );
         }
     },
 
-    amount: function(frm) { frm.trigger("recalculate_totals"); },
+    amount:          function(frm) { frm.trigger("recalculate_totals"); },
     payments_remove: function(frm) { frm.trigger("recalculate_totals"); }
 });

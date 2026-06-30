@@ -12,6 +12,8 @@
   "col_break_header",
   "from_date",
   "to_date",
+  "approved_by",
+  "approved_on",
   "section_filters",
   "cost_center",
   "brand",
@@ -38,6 +40,8 @@
   "total_paid",
   "balance_commission",
   "accountant_note",
+  "rejected_by",
+  "rejection_reason",
   "amended_from"
  ],
  "fields": [
@@ -236,6 +240,35 @@
    "label": "Accountant Note"
   },
   {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1,
+   "in_list_view": 0,
+   "print_hide": 0
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Date",
+   "label": "Approved On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rejected_by",
+   "fieldtype": "Link",
+   "label": "Rejected By",
+   "options": "User",
+   "read_only": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "rejection_reason",
+   "fieldtype": "Small Text",
+   "label": "Rejection Reason",
+   "read_only": 1
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -283,6 +316,13 @@
    "read": 1,
    "report": 1,
    "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Shb Commission Approver",
    "write": 1
   }
  ],

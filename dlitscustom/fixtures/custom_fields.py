@@ -6,6 +6,7 @@ def create_all_custom_fields():
     try:
         print("   Creating all custom fields...")
         create_sales_invoice_commission_fields()
+        create_sales_invoice_invoice_commission_fields()
         print("   All custom fields created successfully")
     except Exception as e:
         print(f"   Error creating all custom fields: {str(e)}")
@@ -49,6 +50,65 @@ def create_sales_invoice_commission_fields():
     frappe.db.commit()
 
 
+def create_sales_invoice_invoice_commission_fields():
+    """Add Buyer Representative / Fixed Commission fields to Sales Invoice."""
+    fields = [
+        {
+            "doctype": "Custom Field",
+            "dt": "Sales Invoice",
+            "fieldname": "dlits_buyer_rep_section",
+            "label": "Buyer Representative Commission",
+            "fieldtype": "Section Break",
+            "insert_after": "dlits_is_me",
+            "collapsible": 1,
+        },
+        {
+            "doctype": "Custom Field",
+            "dt": "Sales Invoice",
+            "fieldname": "dlits_buyer_representative",
+            "label": "Buyer Representative",
+            "fieldtype": "Link",
+            "options": "Dlits Sales Partner",
+            "insert_after": "dlits_buyer_rep_section",
+            "allow_on_submit": 0,
+            "description": "External agent / buyer rep who arranged this deal (fixed commission)",
+        },
+        {
+            "doctype": "Custom Field",
+            "dt": "Sales Invoice",
+            "fieldname": "dlits_fixed_commission",
+            "label": "Fixed Commission",
+            "fieldtype": "Currency",
+            "insert_after": "dlits_buyer_representative",
+            "allow_on_submit": 0,
+            "description": "Agreed lump-sum commission for the buyer representative",
+        },
+        {
+            "doctype": "Custom Field",
+            "dt": "Sales Invoice",
+            "fieldname": "dlits_commission_ref",
+            "label": "Commission Record",
+            "fieldtype": "Link",
+            "options": "Dlits Invoice Commission",
+            "insert_after": "dlits_fixed_commission",
+            "allow_on_submit": 1,
+            "read_only": 1,
+            "print_hide": 1,
+            "description": "Auto-linked when invoice is submitted",
+        },
+    ]
+
+    for field_data in fields:
+        if not frappe.db.exists("Custom Field", {"dt": field_data["dt"], "fieldname": field_data["fieldname"]}):
+            doc = frappe.get_doc(field_data)
+            doc.insert(ignore_permissions=True)
+            print(f"   Created: {field_data['fieldname']} on {field_data['dt']}")
+        else:
+            print(f"   Already exists: {field_data['fieldname']} on {field_data['dt']}")
+
+    frappe.db.commit()
+
+
 def remove_custom_fields():
     """Remove all custom fields created by the app (used during uninstall)."""
     try:
@@ -58,6 +118,11 @@ def remove_custom_fields():
             # Sales Invoice commission fields
             {"dt": "Sales Invoice", "fieldname": "dlits_sales_partner"},
             {"dt": "Sales Invoice", "fieldname": "dlits_is_me"},
+            # Sales Invoice invoice commission fields
+            {"dt": "Sales Invoice", "fieldname": "dlits_buyer_rep_section"},
+            {"dt": "Sales Invoice", "fieldname": "dlits_buyer_representative"},
+            {"dt": "Sales Invoice", "fieldname": "dlits_fixed_commission"},
+            {"dt": "Sales Invoice", "fieldname": "dlits_commission_ref"},
             # Legacy fields (cleanup safety net)
             {"dt": "Sales Invoice", "fieldname": "dlits_commission_section"},
             {"dt": "Sales Invoice", "fieldname": "dlits_commission_type"},

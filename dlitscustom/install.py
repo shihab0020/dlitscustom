@@ -17,7 +17,17 @@ def after_install():
         create_all_custom_fields()
         print("✅ Custom fields created successfully")
         
-        # Step 2: Create workspace
+        # Step 2: Create custom roles
+        print("🔑 Creating custom roles...")
+        create_custom_roles()
+        print("✅ Custom roles created")
+
+        # Step 2b: Create property setters (must survive core upgrades)
+        print("🔧 Creating property setters...")
+        create_property_setters()
+        print("✅ Property setters created")
+
+        # Step 3: Create workspace
         print("🏢 Creating DLITS Custom workspace...")
         create_workspace()
         print("✅ Workspace created successfully")
@@ -110,6 +120,15 @@ def migrate():
         print("🔄 Running DLITS Custom App Migration...")
         print("=" * 60)
         
+        # Step 0: Ensure custom roles and property setters exist
+        print("🔑 Ensuring custom roles...")
+        create_custom_roles()
+        print("✅ Custom roles verified")
+
+        print("🔧 Ensuring property setters...")
+        create_property_setters()
+        print("✅ Property setters verified")
+
         # Step 1: Update custom fields
         print("📝 Updating custom fields...")
         from dlitscustom.fixtures.custom_fields import create_all_custom_fields
@@ -142,6 +161,48 @@ def migrate():
         print(f"❌ Error during migration: {str(e)}")
         frappe.log_error(f"dlitscustom migration error: {str(e)}", "DLITS Migration Error")
         return False
+
+def create_custom_roles():
+    """Create DLITS custom roles if they do not already exist."""
+    roles = [
+        {"role_name": "Shb Commission Approver", "desk_access": 1},
+        {"role_name": "Shb Allow Below Price",    "desk_access": 1},
+    ]
+    for role_def in roles:
+        if not frappe.db.exists("Role", role_def["role_name"]):
+            frappe.get_doc({"doctype": "Role", **role_def}).insert(ignore_permissions=True)
+            print(f"   Created role: {role_def['role_name']}")
+        else:
+            print(f"   Role already exists: {role_def['role_name']}")
+
+
+def create_property_setters():
+    """Recreate all property setters that override core Frappe/ERPNext field properties.
+    Must survive upgrades — never modify core JSON files directly."""
+    setters = [
+        # Contact: make Mobile No editable (core file had read_only=1)
+        {
+            "doctype_or_field": "DocField",
+            "doc_type":    "Contact",
+            "field_name":  "mobile_no",
+            "property":    "read_only",
+            "property_type": "Check",
+            "value":       "0",
+        },
+    ]
+    for s in setters:
+        existing = frappe.db.get_value(
+            "Property Setter",
+            {"doc_type": s["doc_type"], "field_name": s.get("field_name"), "property": s["property"]},
+            "name"
+        )
+        if existing:
+            frappe.db.set_value("Property Setter", existing, "value", s["value"])
+            print(f"   Updated Property Setter: {s['doc_type']}.{s.get('field_name')} → {s['property']} = {s['value']}")
+        else:
+            frappe.get_doc({"doctype": "Property Setter", **s}).insert(ignore_permissions=True)
+            print(f"   Created Property Setter: {s['doc_type']}.{s.get('field_name')} → {s['property']} = {s['value']}")
+
 
 def create_workspace():
     """Create DLITS Custom workspace from JSON file"""

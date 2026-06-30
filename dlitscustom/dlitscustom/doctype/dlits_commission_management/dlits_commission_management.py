@@ -88,6 +88,13 @@ class DlitsCommissionManagement(Document):
         self.total_paid         = total_paid
         self.balance_commission = flt(self.total_commission) - total_paid
 
+        # Auto-mark as Paid once all commission is covered after approval
+        if (self.docstatus == 1
+                and self.status == "Approved"
+                and flt(self.total_commission) > 0
+                and flt(self.balance_commission) <= 0):
+            self.status = "Paid"
+
 
 # ---------------------------------------------------------------------------
 # Whitelisted function
@@ -366,3 +373,168 @@ def _build_brand_item_join(brand, item):
         filter_ += " AND sii.item_code = %(item)s"
         values["item"] = item
     return join, filter_, values
+
+
+# ---------------------------------------------------------------------------
+# Partner payment info helper
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def get_partner_payment_info(sales_partner):
+    """Return partner type, supplier, and linked employee (if any) for the payment dialog."""
+    partner = frappe.db.get_value(
+        "Dlits Sales Partner", sales_partner,
+        ["partner_type", "supplier", "user", "is_group"],
+        as_dict=True
+    )
+    if not partner:
+        return {}
+
+    employee = None
+    if partner.partner_type == "Internal User" and partner.user:
+        employee = frappe.db.get_value("Employee", {"user_id": partner.user}, "name")
+
+    return {
+        "partner_type": partner.partner_type,
+        "supplier":     partner.supplier,
+        "user":         partner.user,
+        "is_group":     partner.is_group,
+        "employee":     employee,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Additional Salary payment (for internal employee partners)
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def create_additional_salary_payment(name, employee, salary_component, payroll_date, amount):
+    doc = frappe.get_doc("Dlits Commission Management", name)
+    if doc.status != "Approved":
+        frappe.throw("Commission must be in 'Approved' status before making a payment.")
+    amount = flt(amount)
+    if amount <= 0:
+        frappe.throw("Payment amount must be greater than zero.")
+
+    company = (frappe.defaults.get_user_default("Company")
+               or frappe.db.get_single_value("Global Defaults", "default_company"))
+
+    add_sal = frappe.get_doc({
+        "doctype":          "Additional Salary",
+        "employee":         employee,
+        "salary_component": salary_component,
+        "company":          company,
+        "payroll_date":     payroll_date,
+        "amount":           amount,
+        "overwrite_salary_structure_amount": 0,
+    })
+    add_sal.insert(ignore_permissions=True)
+    add_sal.submit()
+
+    doc.reload()
+    doc.append("payments", {
+        "reference_type":    "Additional Salary",
+        "reference_doctype": "Additional Salary",
+        "reference_name":    add_sal.name,
+        "payment_date":      payroll_date,
+        "amount":            amount,
+        "remarks":           f"Commission via Additional Salary ({add_sal.name})",
+    })
+    doc.flags.ignore_permissions = True
+    doc.save()
+
+    return add_sal.name
+
+
+# ---------------------------------------------------------------------------
+# Approval workflow
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def approve_commission(name):
+    if "Shb Commission Approver" not in frappe.get_roles():
+        frappe.throw("Only users with the 'Shb Commission Approver' role can approve commissions.")
+    doc = frappe.get_doc("Dlits Commission Management", name)
+    if doc.docstatus != 1 or doc.status != "Requested for Approval":
+        frappe.throw(f"Cannot approve. Status must be 'Requested for Approval' (current: {doc.status}).")
+    doc.db_set("status", "Approved")
+    doc.db_set("approved_by", frappe.session.user)
+    doc.db_set("approved_on", frappe.utils.nowdate())
+    frappe.db.commit()
+
+
+@frappe.whitelist()
+def reject_commission(name, rejection_reason=""):
+    if "Shb Commission Approver" not in frappe.get_roles():
+        frappe.throw("Only users with the 'Shb Commission Approver' role can reject commissions.")
+    doc = frappe.get_doc("Dlits Commission Management", name)
+    if doc.docstatus != 1 or doc.status not in ("Requested for Approval", "Approved"):
+        frappe.throw(f"Cannot reject. Status must be Requested for Approval or Approved (current: {doc.status}).")
+    if rejection_reason:
+        doc.db_set("rejection_reason", rejection_reason)
+        doc.db_set("rejected_by", frappe.session.user)
+        frappe.db.commit()
+    doc.flags.ignore_permissions = True
+    doc.cancel()
+
+
+# ---------------------------------------------------------------------------
+# Commission payment via Journal Entry
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def create_payment_journal_entry(name, payment_date, expense_account, payment_account,
+                                  amount, cheque_no=None):
+    doc = frappe.get_doc("Dlits Commission Management", name)
+    if doc.status != "Approved":
+        frappe.throw("Commission must be in 'Approved' status before making a payment.")
+    amount = flt(amount)
+    if amount <= 0:
+        frappe.throw("Payment amount must be greater than zero.")
+
+    company = (frappe.defaults.get_user_default("Company")
+               or frappe.db.get_single_value("Global Defaults", "default_company"))
+
+    je_dict = {
+        "doctype": "Journal Entry",
+        "voucher_type": "Journal Entry",
+        "company": company,
+        "posting_date": payment_date,
+        "user_remark": f"Commission Payment: {doc.sales_partner} ({doc.from_date} to {doc.to_date})",
+        "accounts": [
+            {
+                "account": expense_account,
+                "debit_in_account_currency": amount,
+                "credit_in_account_currency": 0,
+                "cost_center": doc.get("cost_center") or None,
+                "user_remark": f"Commission — {doc.name}",
+            },
+            {
+                "account": payment_account,
+                "debit_in_account_currency": 0,
+                "credit_in_account_currency": amount,
+            },
+        ],
+    }
+    if cheque_no:
+        je_dict["cheque_no"]   = cheque_no
+        je_dict["cheque_date"] = payment_date
+
+    je = frappe.get_doc(je_dict)
+    je.insert(ignore_permissions=True)
+    je.submit()
+
+    # Record in payments child table and save (triggers _recalculate_totals → auto-Paid)
+    doc.reload()
+    doc.append("payments", {
+        "reference_type":    "Journal Entry",
+        "reference_doctype": "Journal Entry",
+        "reference_name":    je.name,
+        "payment_date":      payment_date,
+        "amount":            amount,
+        "remarks":           f"Commission JE: {je.name}",
+    })
+    doc.flags.ignore_permissions = True
+    doc.save()
+
+    return je.name

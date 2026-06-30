@@ -1,0 +1,271 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-06-30 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "sales_invoice",
+  "buyer_representative",
+  "col_break_header",
+  "original_commission",
+  "deduction_approved",
+  "col_break_header2",
+  "final_commission",
+  "paid_amount",
+  "col_break_header3",
+  "recoverable",
+  "balance",
+  "section_status",
+  "status",
+  "needs_review",
+  "col_break_status",
+  "approved_by",
+  "approval_date",
+  "section_remarks",
+  "remarks",
+  "section_returns",
+  "return_reviews",
+  "section_payments",
+  "payments",
+  "section_log",
+  "decision_log",
+  "section_amended",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "no_copy": 1,
+   "options": "DIC-.YYYY.-",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sales Invoice",
+   "options": "Sales Invoice",
+   "reqd": 1
+  },
+  {
+   "fieldname": "buyer_representative",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Buyer Representative",
+   "options": "Dlits Sales Partner"
+  },
+  {
+   "fieldname": "col_break_header",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "original_commission",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Original Commission",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "deduction_approved",
+   "fieldtype": "Currency",
+   "label": "Deduction Approved",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_header2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "final_commission",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Final Commission",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Paid Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_header3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "recoverable",
+   "fieldtype": "Currency",
+   "label": "Recoverable",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "balance",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Balance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_status",
+   "fieldtype": "Section Break",
+   "label": "Status"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nPending\nUnder Review\nApproved\nPartially Paid\nPaid\nClosed"
+  },
+  {
+   "default": "0",
+   "fieldname": "needs_review",
+   "fieldtype": "Check",
+   "label": "Needs Review",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approval_date",
+   "fieldtype": "Date",
+   "label": "Approval Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_remarks",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "section_returns",
+   "fieldtype": "Section Break",
+   "label": "Return Reviews"
+  },
+  {
+   "fieldname": "return_reviews",
+   "fieldtype": "Table",
+   "label": "Return Reviews",
+   "options": "Dlits Commission Return Review"
+  },
+  {
+   "fieldname": "section_payments",
+   "fieldtype": "Section Break",
+   "label": "Payments"
+  },
+  {
+   "fieldname": "payments",
+   "fieldtype": "Table",
+   "label": "Payments",
+   "options": "Dlits Invoice Commission Payment"
+  },
+  {
+   "fieldname": "section_log",
+   "fieldtype": "Section Break",
+   "label": "Decision Log"
+  },
+  {
+   "fieldname": "decision_log",
+   "fieldtype": "Table",
+   "label": "Decision Log",
+   "options": "Dlits Commission Decision Log",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_amended",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Dlits Invoice Commission",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-30 00:00:00",
+ "modified_by": "Administrator",
+ "module": "dlitscustom",
+ "name": "Dlits Invoice Commission",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Shb Commission Approver",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager"
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

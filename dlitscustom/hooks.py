@@ -153,7 +153,12 @@ before_uninstall = "dlitscustom.install.before_uninstall"
 
 doc_events = {
     "Sales Invoice": {
-        "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
+        "validate": [
+            "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits",
+            "dlitscustom.override.sales_return_limit_dlits.sales_return_limit_dlits"
+        ],
+        "on_submit": "dlitscustom.override.invoice_commission_events.on_sales_invoice_submit",
+        "on_cancel": "dlitscustom.override.invoice_commission_events.on_sales_invoice_cancel"
     },
     "Sales Order": {
         "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
@@ -171,6 +176,8 @@ fixtures = [
     {
         "doctype": "Property Setter",
         "filters": [["name", "in", [
+            # Core field overrides (survive upgrades as property setters)
+            "Contact-mobile_no-read_only",
             # Dlits own doctypes
             "Dlits Commission Management-naming_series-options",
             "Dlits Sales Partner-partner_name-unique",
@@ -224,7 +231,11 @@ fixtures = [
             ["dt", "=", "Sales Invoice"],
             ["fieldname", "in", [
                 "dlits_sales_partner",
-                "dlits_is_me"
+                "dlits_is_me",
+                "dlits_buyer_rep_section",
+                "dlits_buyer_representative",
+                "dlits_fixed_commission",
+                "dlits_commission_ref"
             ]]
         ]
     },
