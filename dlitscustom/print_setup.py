@@ -427,3 +427,143 @@ def update_dlits_workspace():
 	ws.save(ignore_permissions=True)
 	frappe.db.commit()
 	print("Workspace updated: Stock Transfer Management section added.")
+
+
+def rebuild_dlits_workspace():
+	"""
+	Completely rebuild the DLITS Custom workspace from scratch.
+	Organized into 6 sections: Stock Transfer, Commission, Sales, Financial Reports,
+	Customer Followup, Pricing — with shortcut tiles at the top and cards below.
+	Safe to re-run: deletes the old workspace doc and recreates it.
+	"""
+	import json
+
+	# ── Content (visual layout) ────────────────────────────────────────────────
+	content = [
+		# ── Stock Transfer ──────────────────────────────────────────────────
+		{"id": "h_st",   "type": "header",   "data": {"text": '<span class="h4"><b>Stock Transfer Management</b></span>', "col": 12}},
+		{"id": "sc_st1", "type": "shortcut", "data": {"shortcut_name": "Stock Transfer Requests", "col": 3}},
+		{"id": "sc_st2", "type": "shortcut", "data": {"shortcut_name": "Stock Balance",           "col": 3}},
+		# ── Commission ──────────────────────────────────────────────────────
+		{"id": "h_cm",   "type": "header",   "data": {"text": '<span class="h4"><b>Commission Management</b></span>', "col": 12}},
+		{"id": "sc_cm1", "type": "shortcut", "data": {"shortcut_name": "Sales Partners",       "col": 3}},
+		{"id": "sc_cm2", "type": "shortcut", "data": {"shortcut_name": "Commission Mgmt",      "col": 3}},
+		{"id": "sc_cm3", "type": "shortcut", "data": {"shortcut_name": "Commission Payments",  "col": 3}},
+		{"id": "sc_cm4", "type": "shortcut", "data": {"shortcut_name": "Commission Report",    "col": 3}},
+		# ── Sales Transactions ───────────────────────────────────────────────
+		{"id": "h_sl",   "type": "header",   "data": {"text": '<span class="h4"><b>Sales Transactions</b></span>', "col": 12}},
+		{"id": "sc_si",  "type": "shortcut", "data": {"shortcut_name": "Sales Invoice",     "col": 3}},
+		{"id": "sc_so",  "type": "shortcut", "data": {"shortcut_name": "Sales Order",       "col": 3}},
+		{"id": "sc_qt",  "type": "shortcut", "data": {"shortcut_name": "Quotation",         "col": 3}},
+		{"id": "sc_cf",  "type": "shortcut", "data": {"shortcut_name": "Customer Followup", "col": 3}},
+		# ── Financial Reports ────────────────────────────────────────────────
+		{"id": "h_fr",   "type": "header",   "data": {"text": '<span class="h4"><b>Financial Reports</b></span>', "col": 12}},
+		{"id": "sc_tx",  "type": "shortcut", "data": {"shortcut_name": "Tax Report",      "col": 3}},
+		{"id": "sc_sa",  "type": "shortcut", "data": {"shortcut_name": "Sales Analytics", "col": 3}},
+		{"id": "sc_ar",  "type": "shortcut", "data": {"shortcut_name": "AR Report",       "col": 3}},
+		{"id": "sc_ars", "type": "shortcut", "data": {"shortcut_name": "AR Summary",      "col": 3}},
+		# ── All Modules (cards) ──────────────────────────────────────────────
+		{"id": "h_all",  "type": "header",   "data": {"text": '<span class="h4"><b>All Modules</b></span>', "col": 12}},
+		{"id": "cd_st",  "type": "card",     "data": {"card_name": "Stock Transfer Management", "col": 4}},
+		{"id": "cd_cm",  "type": "card",     "data": {"card_name": "Commission Management",     "col": 4}},
+		{"id": "cd_sl",  "type": "card",     "data": {"card_name": "Sales Transactions",        "col": 4}},
+		{"id": "cd_pm",  "type": "card",     "data": {"card_name": "Pricing Management",        "col": 4}},
+		{"id": "cd_cf",  "type": "card",     "data": {"card_name": "Customer Followup",         "col": 4}},
+		{"id": "cd_fr",  "type": "card",     "data": {"card_name": "Financial Reports",         "col": 4}},
+	]
+
+	# ── Shortcuts (colored tiles) ──────────────────────────────────────────────
+	shortcuts = [
+		# Stock Transfer
+		{"label": "Stock Transfer Requests", "link_to": "Dlits Stock Transfer Request", "type": "DocType", "color": "#2e3092", "doc_view": "List"},
+		{"label": "Stock Balance",           "link_to": "Dlits Stock Balance",          "type": "Report",  "color": "#fd7e14", "doc_view": ""},
+		# Commission
+		{"label": "Sales Partners",       "link_to": "Dlits Sales Partner",        "type": "DocType", "color": "#8e44ad", "doc_view": "List"},
+		{"label": "Commission Mgmt",      "link_to": "Dlits Commission Management", "type": "DocType", "color": "#6f42c1", "doc_view": "List"},
+		{"label": "Commission Payments",  "link_to": "Dlits Commission Payment",   "type": "DocType", "color": "#9b59b6", "doc_view": "List"},
+		{"label": "Commission Report",    "link_to": "Dlits Commission Report",    "type": "Report",  "color": "#7952b3", "doc_view": ""},
+		# Sales Transactions
+		{"label": "Sales Invoice",     "link_to": "Sales Invoice",          "type": "DocType", "color": "#e74c3c", "doc_view": "List"},
+		{"label": "Sales Order",       "link_to": "Sales Order",            "type": "DocType", "color": "#27ae60", "doc_view": "List"},
+		{"label": "Quotation",         "link_to": "Quotation",              "type": "DocType", "color": "#fd7e14", "doc_view": "List"},
+		{"label": "Customer Followup", "link_to": "Dlits Customer Followup","type": "DocType", "color": "#17a2b8", "doc_view": "List"},
+		# Financial Reports
+		{"label": "Tax Report",      "link_to": "DLITS Tax Report",                  "type": "Report", "color": "#6f42c1", "doc_view": ""},
+		{"label": "Sales Analytics", "link_to": "DLITS Sales Analytics",             "type": "Report", "color": "#e83e8c", "doc_view": ""},
+		{"label": "AR Report",       "link_to": "DLITS Accounts Receivable",         "type": "Report", "color": "#2e7d32", "doc_view": ""},
+		{"label": "AR Summary",      "link_to": "DLITS Accounts Receivable Summary", "type": "Report", "color": "#1565c0", "doc_view": ""},
+	]
+
+	# ── Links (card content) ───────────────────────────────────────────────────
+	links = [
+		# Stock Transfer Management card
+		{"type": "Card Break", "label": "Stock Transfer Management", "link_count": 2, "link_type": "DocType", "onboard": 1, "hidden": 0, "is_query_report": 0},
+		{"type": "Link", "label": "Dlits Stock Transfer Request", "link_to": "Dlits Stock Transfer Request", "link_type": "DocType", "is_query_report": 0, "onboard": 1,  "hidden": 0},
+		{"type": "Link", "label": "Stock Balance",                "link_to": "Dlits Stock Balance",          "link_type": "Report",  "is_query_report": 1, "onboard": 0,  "hidden": 0},
+		# Commission Management card
+		{"type": "Card Break", "label": "Commission Management", "link_count": 4, "link_type": "DocType", "onboard": 1, "hidden": 0, "is_query_report": 0},
+		{"type": "Link", "label": "Dlits Sales Partner",         "link_to": "Dlits Sales Partner",         "link_type": "DocType", "is_query_report": 0, "onboard": 1, "hidden": 0},
+		{"type": "Link", "label": "Dlits Commission Management", "link_to": "Dlits Commission Management",  "link_type": "DocType", "is_query_report": 0, "onboard": 1, "hidden": 0},
+		{"type": "Link", "label": "Dlits Commission Payment",    "link_to": "Dlits Commission Payment",    "link_type": "DocType", "is_query_report": 0, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Commission Report",           "link_to": "Dlits Commission Report",     "link_type": "Report",  "is_query_report": 1, "onboard": 0, "hidden": 0},
+		# Sales Transactions card
+		{"type": "Card Break", "label": "Sales Transactions", "link_count": 4, "link_type": "DocType", "onboard": 0, "hidden": 0, "is_query_report": 0},
+		{"type": "Link", "label": "Sales Order",   "link_to": "Sales Order",   "link_type": "DocType", "is_query_report": 0, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Sales Invoice", "link_to": "Sales Invoice", "link_type": "DocType", "is_query_report": 0, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Quotation",     "link_to": "Quotation",     "link_type": "DocType", "is_query_report": 0, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Customer",      "link_to": "Customer",      "link_type": "DocType", "is_query_report": 0, "onboard": 0, "hidden": 0},
+		# Pricing Management card
+		{"type": "Card Break", "label": "Pricing Management", "link_count": 2, "link_type": "DocType", "onboard": 0, "hidden": 0, "is_query_report": 0},
+		{"type": "Link", "label": "Pricing Rule Dlits", "link_to": "Pricing Rule Dlits", "link_type": "DocType", "is_query_report": 0, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Item Price",         "link_to": "Item Price",         "link_type": "DocType", "is_query_report": 0, "onboard": 0, "hidden": 0},
+		# Customer Followup card
+		{"type": "Card Break", "label": "Customer Followup", "link_count": 3, "link_type": "DocType", "onboard": 0, "hidden": 0, "is_query_report": 0},
+		{"type": "Link", "label": "Dlits Customer Followup",           "link_to": "Dlits Customer Followup",                    "link_type": "DocType", "is_query_report": 0, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Customer Followup Report",          "link_to": "Dlits Customer Followup",                    "link_type": "Report",  "is_query_report": 1, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Customer Acquisition and Loyalty",  "link_to": "Dlits Customer Acquisition and Loyalty",     "link_type": "Report",  "is_query_report": 1, "onboard": 0, "hidden": 0},
+		# Financial Reports card
+		{"type": "Card Break", "label": "Financial Reports", "link_count": 4, "link_type": "Report", "onboard": 0, "hidden": 0, "is_query_report": 0},
+		{"type": "Link", "label": "Tax Report",        "link_to": "DLITS Tax Report",                  "link_type": "Report", "is_query_report": 1, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Sales Analytics",   "link_to": "DLITS Sales Analytics",             "link_type": "Report", "is_query_report": 1, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "Accounts Receivable","link_to": "DLITS Accounts Receivable",        "link_type": "Report", "is_query_report": 1, "onboard": 0, "hidden": 0},
+		{"type": "Link", "label": "AR Summary",        "link_to": "DLITS Accounts Receivable Summary", "link_type": "Report", "is_query_report": 1, "onboard": 0, "hidden": 0},
+	]
+
+	roles = [
+		"System Manager", "Accounts Manager", "Accounts User",
+		"Sales Manager",  "Purchase Manager",
+		"Shb Basic User", "Stock User", "Stock Manager",
+		"Shb Stock Transfer Approver", "Shb Commission Approver",
+	]
+
+	# ── Write to DB ────────────────────────────────────────────────────────────
+	if frappe.db.exists("Workspace", "DLITS Custom"):
+		ws = frappe.get_doc("Workspace", "DLITS Custom")
+		ws.links    = []
+		ws.shortcuts = []
+		ws.roles    = []
+	else:
+		ws = frappe.new_doc("Workspace")
+		ws.name  = "DLITS Custom"
+		ws.label = "DLITS Custom"
+		ws.title = "DLITS Custom"
+
+	ws.module         = "dlitscustom"
+	ws.icon           = "layers"
+	ws.indicator_color = "blue"
+	ws.is_hidden      = 0
+	ws.public         = 1
+	ws.sequence_id    = 1.0
+	ws.parent_page    = ""
+	ws.content        = json.dumps(content)
+
+	for sc in shortcuts:
+		ws.append("shortcuts", sc)
+	for lnk in links:
+		ws.append("links", lnk)
+	for role in roles:
+		ws.append("roles", {"role": role})
+
+	ws.save(ignore_permissions=True)
+	frappe.db.commit()
+	print("DLITS Custom workspace rebuilt with all modules.")

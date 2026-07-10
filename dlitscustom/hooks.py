@@ -36,17 +36,22 @@ doctype_js = {
     "Sales Order": [
         "public/js/sales_order_pricing_rule_dlits.js",
         "public/js/sales_order_dlits_stock_transfer.js",
+        "public/js/sales_order_dlits_margin.js",
     ],
     "Project": "public/js/project_dlits_stock_transfer.js",
     "Sales Invoice": [
         "public/js/sales_invoice_pricing_rule_dlits.js",
         "public/js/sales_invoice_dlits_commission.js",
-        "public/js/sales_invoice_dlits_followup.js"
+        "public/js/sales_invoice_dlits_followup.js",
+        "public/js/sales_invoice_dlits_margin.js",
     ],
     "Payment Entry": "public/js/payment_entry_dlits.js",
     "Journal Entry": "public/js/journal_entry_dlits.js",
     "Customer": "public/js/customer.js",
-    "Quotation": "public/js/quotation.js",
+    "Quotation": [
+        "public/js/quotation.js",
+        "public/js/quotation_dlits_margin.js",
+    ],
     "Purchase Receipt":   "public/js/purchase_receipt.js",
 }
 
@@ -155,16 +160,24 @@ doc_events = {
     "Sales Invoice": {
         "validate": [
             "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits",
-            "dlitscustom.override.sales_return_limit_dlits.sales_return_limit_dlits"
+            "dlitscustom.override.sales_return_limit_dlits.sales_return_limit_dlits",
+            "dlitscustom.override.margin_sync.sync_margin_table",
         ],
+        "before_submit": "dlitscustom.override.sales_return_limit_dlits.sales_return_before_submit",
         "on_submit": "dlitscustom.override.invoice_commission_events.on_sales_invoice_submit",
         "on_cancel": "dlitscustom.override.invoice_commission_events.on_sales_invoice_cancel"
     },
     "Sales Order": {
-        "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
+        "validate": [
+            "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits",
+            "dlitscustom.override.margin_sync.sync_margin_table",
+        ]
     },
     "Quotation": {
-        "validate": "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits"
+        "validate": [
+            "dlitscustom.override.pricing_rule_verify_dlits.pricing_rule_verify_dlits",
+            "dlitscustom.override.margin_sync.sync_margin_table",
+        ]
     },
     "Purchase Invoice": {
         "before_submit": "dlitscustom.override.purchase_invoice_bill_no.prevent_duplicate_bill_no",

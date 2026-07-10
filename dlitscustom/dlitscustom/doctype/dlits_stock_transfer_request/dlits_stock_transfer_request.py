@@ -12,6 +12,14 @@ class DlitsStockTransferRequest(Document):
 	def validate(self):
 		self._validate_items()
 		self._handle_status_transition()
+		self._validate_abandonment_reason()
+
+	def _validate_abandonment_reason(self):
+		if self.status == "Abandoned":
+			if "Shb Stock Transfer Controller" not in frappe.get_roles():
+				frappe.throw(_("Only Shb Stock Transfer Controller can abandon requests."))
+			if not self.abandonment_reason:
+				frappe.throw(_("Abandonment / Cancellation Reason is mandatory when abandoning a request."))
 
 	def _handle_status_transition(self):
 		old = self.get_doc_before_save()
@@ -77,6 +85,10 @@ class DlitsStockTransferRequest(Document):
 		se = _create_stock_entry(self)
 		self.db_set("stock_entry", se.name)
 		self.db_set("completion_date", today())
+
+	def before_cancel(self):
+		if not self.abandonment_reason:
+			frappe.throw(_("Abandonment / Cancellation Reason is mandatory before cancelling."))
 
 	def on_cancel(self):
 		if self.stock_entry:

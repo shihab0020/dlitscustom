@@ -131,66 +131,102 @@ function _show_additional_salary_dialog(frm, employee) {
 }
 
 function _show_je_dialog(frm) {
-    var d = new frappe.ui.Dialog({
-        title: "Record Payment — Journal Entry",
-        fields: [
-            {
-                fieldname: "payment_date",
-                label: "Payment Date",
-                fieldtype: "Date",
-                default: frappe.datetime.get_today(),
-                reqd: 1
-            },
-            {
-                fieldname: "expense_account",
-                label: "Commission Expense Account",
-                fieldtype: "Link",
-                options: "Account",
-                filters: { root_type: "Expense" },
-                reqd: 1
-            },
-            {
-                fieldname: "payment_account",
-                label: "Payment Account (Bank/Cash)",
-                fieldtype: "Link",
-                options: "Account",
-                filters: { account_type: ["in", ["Bank", "Cash"]] },
-                reqd: 1
-            },
-            {
-                fieldname: "amount",
-                label: "Amount",
-                fieldtype: "Currency",
-                default: frm.doc.balance,
-                reqd: 1
-            },
-            {
-                fieldname: "cheque_no",
-                label: "Cheque / Transfer No.",
-                fieldtype: "Data"
-            }
-        ],
-        primary_action_label: "Create & Submit",
-        primary_action: function(values) {
-            frappe.call({
-                method: "dlitscustom.dlitscustom.doctype.dlits_invoice_commission.dlits_invoice_commission.create_payment_journal_entry",
-                args: {
-                    name: frm.doc.name,
-                    payment_date: values.payment_date,
-                    expense_account: values.expense_account,
-                    payment_account: values.payment_account,
-                    amount: values.amount,
-                    cheque_no: values.cheque_no || null
+    var company = frappe.defaults.get_user_default("Company")
+                  || (frappe.boot.sysdefaults && frappe.boot.sysdefaults.default_company);
+    frappe.db.get_value("Company", company, "cost_center", function(r) {
+        var default_cc = (r && r.cost_center) ? r.cost_center : "";
+        var d = new frappe.ui.Dialog({
+            title: "Record Payment — Journal Entry",
+            fields: [
+                {
+                    fieldname: "payment_date",
+                    label: "Payment Date",
+                    fieldtype: "Date",
+                    default: frappe.datetime.get_today(),
+                    reqd: 1
                 },
-                callback: function(r) {
-                    d.hide();
-                    frm.reload_doc();
-                    frappe.show_alert({ message: "Payment recorded via Journal Entry.", indicator: "green" });
+                { fieldtype: "Column Break" },
+                {
+                    fieldname: "cost_center",
+                    label: "Cost Center",
+                    fieldtype: "Link",
+                    options: "Cost Center",
+                    default: default_cc,
+                    reqd: 1,
+                    get_query: function() { return { filters: { is_group: 0 } }; }
+                },
+                { fieldtype: "Section Break" },
+                {
+                    fieldname: "expense_account",
+                    label: "Commission Expense Account",
+                    fieldtype: "Link",
+                    options: "Account",
+                    reqd: 1,
+                    get_query: function() {
+                        return {
+                            filters: {
+                                account_name: ["in", [
+                                    "Buyer Representative Incetives & Gifts",
+                                    "Sales Partner Rebates & Comm."
+                                ]],
+                                is_group: 0
+                            }
+                        };
+                    }
+                },
+                { fieldtype: "Column Break" },
+                {
+                    fieldname: "payment_account",
+                    label: "Payment Account (Bank/Cash)",
+                    fieldtype: "Link",
+                    options: "Account",
+                    reqd: 1,
+                    get_query: function() {
+                        return { filters: { account_type: ["in", ["Bank", "Cash"]], is_group: 0 } };
+                    }
+                },
+                { fieldtype: "Section Break" },
+                {
+                    fieldname: "amount",
+                    label: "Amount",
+                    fieldtype: "Currency",
+                    default: frm.doc.balance,
+                    reqd: 1
+                },
+                { fieldtype: "Column Break" },
+                {
+                    fieldname: "cheque_no",
+                    label: "Cheque / Transfer No.",
+                    fieldtype: "Data"
                 }
-            });
-        }
+            ],
+            primary_action_label: "Create & Submit",
+            primary_action: function(values) {
+                frappe.call({
+                    method: "dlitscustom.dlitscustom.doctype.dlits_invoice_commission.dlits_invoice_commission.create_payment_journal_entry",
+                    args: {
+                        name: frm.doc.name,
+                        payment_date: values.payment_date,
+                        expense_account: values.expense_account,
+                        payment_account: values.payment_account,
+                        cost_center: values.cost_center,
+                        amount: values.amount,
+                        cheque_no: values.cheque_no || null
+                    },
+                    freeze: true,
+                    freeze_message: "Creating Journal Entry...",
+                    callback: function(r) {
+                        if (!r.exc) {
+                            d.hide();
+                            frm.reload_doc();
+                            frappe.show_alert({ message: "Payment recorded via Journal Entry.", indicator: "green" });
+                        }
+                    }
+                });
+            }
+        });
+        d.show();
     });
-    d.show();
 }
 
 function _show_payment_method_dialog(frm, employee) {

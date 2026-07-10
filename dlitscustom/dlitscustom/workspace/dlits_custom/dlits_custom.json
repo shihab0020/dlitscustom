@@ -1,7 +1,7 @@
 {
  "app": "dlitscustom",
  "charts": [],
- "content": "[{\"id\": \"header_st\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Stock Transfer Management</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_st1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Transfer Requests\", \"col\": 3}}, {\"id\": \"header_1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Commission Management</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dlits Sales Partner\", \"col\": 3}}, {\"id\": \"shortcut_2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dlits Commission Management\", \"col\": 3}}, {\"id\": \"header_2\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Financial Reports</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Report\", \"col\": 3}}, {\"id\": \"shortcut_4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Analytics Report\", \"col\": 3}}, {\"id\": \"shortcut_5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"AR Report\", \"col\": 3}}, {\"id\": \"shortcut_6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"AR Summary\", \"col\": 3}}, {\"id\": \"header_3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Configuration &amp; Transactions</b></span>\", \"col\": 12}}, {\"id\": \"card_1\", \"type\": \"card\", \"data\": {\"card_name\": \"Commission Management\", \"col\": 4}}, {\"id\": \"card_2\", \"type\": \"card\", \"data\": {\"card_name\": \"Pricing Management\", \"col\": 4}}, {\"id\": \"card_3\", \"type\": \"card\", \"data\": {\"card_name\": \"Sales Transactions\", \"col\": 4}}, {\"id\": \"card_4\", \"type\": \"card\", \"data\": {\"card_name\": \"Customer Followup\", \"col\": 4}}, {\"id\": \"card_5\", \"type\": \"card\", \"data\": {\"card_name\": \"Financial Reports\", \"col\": 4}}, {\"id\": \"card_st\", \"type\": \"card\", \"data\": {\"card_name\": \"Stock Transfer Management\", \"col\": 4}}]",
+ "content": "[{\"id\": \"h_st\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Stock Transfer Management</b></span>\", \"col\": 12}}, {\"id\": \"sc_st1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Transfer Requests\", \"col\": 3}}, {\"id\": \"sc_st2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Balance\", \"col\": 3}}, {\"id\": \"h_cm\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Commission Management</b></span>\", \"col\": 12}}, {\"id\": \"sc_cm1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Partners\", \"col\": 3}}, {\"id\": \"sc_cm2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Commission Mgmt\", \"col\": 3}}, {\"id\": \"sc_cm3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Commission Payments\", \"col\": 3}}, {\"id\": \"sc_cm4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Commission Report\", \"col\": 3}}, {\"id\": \"h_sl\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Sales Transactions</b></span>\", \"col\": 12}}, {\"id\": \"sc_si\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoice\", \"col\": 3}}, {\"id\": \"sc_so\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Order\", \"col\": 3}}, {\"id\": \"sc_qt\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Quotation\", \"col\": 3}}, {\"id\": \"sc_cf\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer Followup\", \"col\": 3}}, {\"id\": \"h_fr\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Financial Reports</b></span>\", \"col\": 12}}, {\"id\": \"sc_tx\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tax Report\", \"col\": 3}}, {\"id\": \"sc_sa\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Analytics\", \"col\": 3}}, {\"id\": \"sc_ar\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"AR Report\", \"col\": 3}}, {\"id\": \"sc_ars\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"AR Summary\", \"col\": 3}}, {\"id\": \"h_all\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>All Modules</b></span>\", \"col\": 12}}, {\"id\": \"cd_st\", \"type\": \"card\", \"data\": {\"card_name\": \"Stock Transfer Management\", \"col\": 4}}, {\"id\": \"cd_cm\", \"type\": \"card\", \"data\": {\"card_name\": \"Commission Management\", \"col\": 4}}, {\"id\": \"cd_sl\", \"type\": \"card\", \"data\": {\"card_name\": \"Sales Transactions\", \"col\": 4}}, {\"id\": \"cd_pm\", \"type\": \"card\", \"data\": {\"card_name\": \"Pricing Management\", \"col\": 4}}, {\"id\": \"cd_cf\", \"type\": \"card\", \"data\": {\"card_name\": \"Customer Followup\", \"col\": 4}}, {\"id\": \"cd_fr\", \"type\": \"card\", \"data\": {\"card_name\": \"Financial Reports\", \"col\": 4}}]",
  "creation": "2026-04-17 21:41:24.599641",
  "custom_blocks": [],
  "docstatus": 0,
@@ -10,7 +10,7 @@
  "hide_custom": 0,
  "icon": "layers",
  "idx": 0,
- "indicator_color": "orange",
+ "indicator_color": "blue",
  "is_hidden": 0,
  "label": "DLITS Custom",
  "link_type": "DocType",
@@ -18,10 +18,39 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Commission Management",
+   "label": "Stock Transfer Management",
    "link_count": 2,
    "link_type": "DocType",
+   "onboard": 1,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Dlits Stock Transfer Request",
+   "link_count": 0,
+   "link_to": "Dlits Stock Transfer Request",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Stock Balance",
+   "link_count": 0,
+   "link_to": "Dlits Stock Balance",
+   "link_type": "Report",
    "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Commission Management",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 1,
    "type": "Card Break"
   },
   {
@@ -31,7 +60,7 @@
    "link_count": 0,
    "link_to": "Dlits Sales Partner",
    "link_type": "DocType",
-   "onboard": 0,
+   "onboard": 1,
    "type": "Link"
   },
   {
@@ -41,35 +70,26 @@
    "link_count": 0,
    "link_to": "Dlits Commission Management",
    "link_type": "DocType",
-   "onboard": 0,
+   "onboard": 1,
    "type": "Link"
   },
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Pricing Management",
-   "link_count": 2,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Pricing Rule Dlits",
+   "label": "Dlits Commission Payment",
    "link_count": 0,
-   "link_to": "Pricing Rule Dlits",
+   "link_to": "Dlits Commission Payment",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
-   "label": "Item Price",
+   "is_query_report": 1,
+   "label": "Commission Report",
    "link_count": 0,
-   "link_to": "Item Price",
-   "link_type": "DocType",
+   "link_to": "Dlits Commission Report",
+   "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   },
@@ -77,7 +97,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Sales Transactions",
-   "link_count": 3,
+   "link_count": 4,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -108,6 +128,45 @@
    "label": "Quotation",
    "link_count": 0,
    "link_to": "Quotation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customer",
+   "link_count": 0,
+   "link_to": "Customer",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Pricing Management",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Pricing Rule Dlits",
+   "link_count": 0,
+   "link_to": "Pricing Rule Dlits",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Item Price",
+   "link_count": 0,
+   "link_to": "Item Price",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -156,7 +215,7 @@
    "is_query_report": 0,
    "label": "Financial Reports",
    "link_count": 4,
-   "link_type": "DocType",
+   "link_type": "Report",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -173,7 +232,7 @@
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Sales Analytics Report",
+   "label": "Sales Analytics",
    "link_count": 0,
    "link_to": "DLITS Sales Analytics",
    "link_type": "Report",
@@ -199,28 +258,9 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Stock Transfer Management",
-   "link_count": 1,
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Dlits Stock Transfer Request",
-   "link_count": 0,
-   "link_to": "Dlits Stock Transfer Request",
-   "link_type": "DocType",
-   "onboard": 1,
-   "type": "Link"
   }
  ],
- "modified": "2026-04-29 00:00:00.000000",
+ "modified": "2026-07-10 04:51:17.461660",
  "modified_by": "Administrator",
  "module": "dlitscustom",
  "name": "DLITS Custom",
@@ -253,22 +293,86 @@
   },
   {
    "role": "Stock Manager"
+  },
+  {
+   "role": "Shb Stock Transfer Approver"
+  },
+  {
+   "role": "Shb Commission Approver"
   }
  ],
  "sequence_id": 1.0,
  "shortcuts": [
   {
+   "color": "#2e3092",
+   "doc_view": "List",
+   "label": "Stock Transfer Requests",
+   "link_to": "Dlits Stock Transfer Request",
+   "type": "DocType"
+  },
+  {
+   "color": "#fd7e14",
+   "doc_view": "",
+   "label": "Stock Balance",
+   "link_to": "Dlits Stock Balance",
+   "report_ref_doctype": "Stock Ledger Entry",
+   "type": "Report"
+  },
+  {
+   "color": "#8e44ad",
+   "doc_view": "List",
+   "label": "Sales Partners",
+   "link_to": "Dlits Sales Partner",
+   "type": "DocType"
+  },
+  {
+   "color": "#6f42c1",
+   "doc_view": "List",
+   "label": "Commission Mgmt",
+   "link_to": "Dlits Commission Management",
+   "type": "DocType"
+  },
+  {
+   "color": "#9b59b6",
+   "doc_view": "List",
+   "label": "Commission Payments",
+   "link_to": "Dlits Commission Payment",
+   "type": "DocType"
+  },
+  {
+   "color": "#7952b3",
+   "doc_view": "",
+   "label": "Commission Report",
+   "link_to": "Dlits Commission Report",
+   "report_ref_doctype": "Dlits Commission Management",
+   "type": "Report"
+  },
+  {
    "color": "#e74c3c",
    "doc_view": "List",
-   "label": "Dlits Sales Partner",
-   "link_to": "Dlits Sales Partner",
+   "label": "Sales Invoice",
+   "link_to": "Sales Invoice",
    "type": "DocType"
   },
   {
    "color": "#27ae60",
    "doc_view": "List",
-   "label": "Dlits Commission Management",
-   "link_to": "Dlits Commission Management",
+   "label": "Sales Order",
+   "link_to": "Sales Order",
+   "type": "DocType"
+  },
+  {
+   "color": "#fd7e14",
+   "doc_view": "List",
+   "label": "Quotation",
+   "link_to": "Quotation",
+   "type": "DocType"
+  },
+  {
+   "color": "#17a2b8",
+   "doc_view": "List",
+   "label": "Customer Followup",
+   "link_to": "Dlits Customer Followup",
    "type": "DocType"
   },
   {
@@ -282,7 +386,7 @@
   {
    "color": "#e83e8c",
    "doc_view": "",
-   "label": "Sales Analytics Report",
+   "label": "Sales Analytics",
    "link_to": "DLITS Sales Analytics",
    "report_ref_doctype": "Sales Order",
    "type": "Report"
@@ -302,27 +406,6 @@
    "link_to": "DLITS Accounts Receivable Summary",
    "report_ref_doctype": "Sales Invoice",
    "type": "Report"
-  },
-  {
-   "color": "#3498db",
-   "doc_view": "List",
-   "label": "Pricing Rule Dlits",
-   "link_to": "Pricing Rule Dlits",
-   "type": "DocType"
-  },
-  {
-   "color": "#17a2b8",
-   "doc_view": "List",
-   "label": "Customer Followup",
-   "link_to": "Dlits Customer Followup",
-   "type": "DocType"
-  },
-  {
-   "color": "#2e3092",
-   "doc_view": "List",
-   "label": "Stock Transfer Requests",
-   "link_to": "Dlits Stock Transfer Request",
-   "type": "DocType"
   }
  ],
  "title": "DLITS Custom",

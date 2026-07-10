@@ -70,76 +70,101 @@ function _show_additional_salary_dialog(frm, info) {
 }
 
 function _show_je_dialog(frm) {
-    let d = new frappe.ui.Dialog({
-        title: __("Commission Payment via Journal Entry"),
-        fields: [
-            {
-                fieldname: "amount",
-                label: __("Amount"),
-                fieldtype: "Currency",
-                default: frm.doc.balance_commission,
-                reqd: 1
-            },
-            { fieldtype: "Column Break" },
-            {
-                fieldname: "payment_date",
-                label: __("Payment Date"),
-                fieldtype: "Date",
-                default: frappe.datetime.get_today(),
-                reqd: 1
-            },
-            { fieldtype: "Section Break", label: __("Accounts") },
-            {
-                fieldname: "expense_account",
-                label: __("Commission Expense Account"),
-                fieldtype: "Link",
-                options: "Account",
-                reqd: 1,
-                description: __("Debit — e.g. Sales Commission Expense"),
-                get_query: function() { return { filters: { root_type: "Expense", is_group: 0 } }; }
-            },
-            { fieldtype: "Column Break" },
-            {
-                fieldname: "payment_account",
-                label: __("Pay From (Bank / Cash)"),
-                fieldtype: "Link",
-                options: "Account",
-                reqd: 1,
-                description: __("Credit — money leaves this account"),
-                get_query: function() { return { filters: { account_type: ["in", ["Bank", "Cash"]], is_group: 0 } }; }
-            },
-            { fieldtype: "Section Break", label: __("Reference") },
-            {
-                fieldname: "cheque_no",
-                label: __("Reference / Cheque No"),
-                fieldtype: "Data"
-            }
-        ],
-        primary_action_label: __("Create Journal Entry"),
-        primary_action: function(vals) {
-            frappe.call({
-                method: "dlitscustom.dlitscustom.doctype.dlits_commission_management.dlits_commission_management.create_payment_journal_entry",
-                args: {
-                    name:            frm.doc.name,
-                    payment_date:    vals.payment_date,
-                    expense_account: vals.expense_account,
-                    payment_account: vals.payment_account,
-                    amount:          vals.amount,
-                    cheque_no:       vals.cheque_no || null,
+    var company = frappe.defaults.get_user_default("Company")
+                  || (frappe.boot.sysdefaults && frappe.boot.sysdefaults.default_company);
+    frappe.db.get_value("Company", company, "cost_center", function(r) {
+        var default_cc = (r && r.cost_center) ? r.cost_center : "";
+        let d = new frappe.ui.Dialog({
+            title: __("Commission Payment via Journal Entry"),
+            fields: [
+                {
+                    fieldname: "amount",
+                    label: __("Amount"),
+                    fieldtype: "Currency",
+                    default: frm.doc.balance_commission,
+                    reqd: 1
                 },
-                freeze: true,
-                freeze_message: __("Creating Journal Entry..."),
-                callback: function(r) {
-                    if (!r.exc) {
-                        d.hide();
-                        frm.reload_doc();
-                        frappe.show_alert({ message: __("Journal Entry created: {0}", [r.message]), indicator: "green" });
+                { fieldtype: "Column Break" },
+                {
+                    fieldname: "payment_date",
+                    label: __("Payment Date"),
+                    fieldtype: "Date",
+                    default: frappe.datetime.get_today(),
+                    reqd: 1
+                },
+                { fieldtype: "Section Break", label: __("Accounts") },
+                {
+                    fieldname: "expense_account",
+                    label: __("Commission Expense Account"),
+                    fieldtype: "Link",
+                    options: "Account",
+                    reqd: 1,
+                    get_query: function() {
+                        return {
+                            filters: {
+                                account_name: ["in", [
+                                    "Buyer Representative Incetives & Gifts",
+                                    "Sales Partner Rebates & Comm."
+                                ]],
+                                is_group: 0
+                            }
+                        };
                     }
+                },
+                { fieldtype: "Column Break" },
+                {
+                    fieldname: "payment_account",
+                    label: __("Pay From (Bank / Cash)"),
+                    fieldtype: "Link",
+                    options: "Account",
+                    reqd: 1,
+                    description: __("Credit — money leaves this account"),
+                    get_query: function() { return { filters: { account_type: ["in", ["Bank", "Cash"]], is_group: 0 } }; }
+                },
+                { fieldtype: "Section Break", label: __("Cost Center & Reference") },
+                {
+                    fieldname: "cost_center",
+                    label: __("Cost Center"),
+                    fieldtype: "Link",
+                    options: "Cost Center",
+                    default: default_cc,
+                    reqd: 1,
+                    get_query: function() { return { filters: { is_group: 0 } }; }
+                },
+                { fieldtype: "Column Break" },
+                {
+                    fieldname: "cheque_no",
+                    label: __("Reference / Cheque No"),
+                    fieldtype: "Data"
                 }
-            });
-        }
+            ],
+            primary_action_label: __("Create Journal Entry"),
+            primary_action: function(vals) {
+                frappe.call({
+                    method: "dlitscustom.dlitscustom.doctype.dlits_commission_management.dlits_commission_management.create_payment_journal_entry",
+                    args: {
+                        name:            frm.doc.name,
+                        payment_date:    vals.payment_date,
+                        expense_account: vals.expense_account,
+                        payment_account: vals.payment_account,
+                        cost_center:     vals.cost_center,
+                        amount:          vals.amount,
+                        cheque_no:       vals.cheque_no || null,
+                    },
+                    freeze: true,
+                    freeze_message: __("Creating Journal Entry..."),
+                    callback: function(r) {
+                        if (!r.exc) {
+                            d.hide();
+                            frm.reload_doc();
+                            frappe.show_alert({ message: __("Journal Entry created: {0}", [r.message]), indicator: "green" });
+                        }
+                    }
+                });
+            }
+        });
+        d.show();
     });
-    d.show();
 }
 
 function _show_payment_method_choice(frm, info) {

@@ -190,6 +190,20 @@ def _exclude_marked_clause(flag, current_doc):
     """
 
 
+def _exclude_invoice_commission_clause():
+    """SQL fragment: skip invoices that already have an active Dlits Invoice Commission
+    (buyer rep fixed commission). Excluded for individual partners only; group invoices
+    must still appear because the group commission is separate from the buyer rep commission."""
+    return """
+        AND si.name NOT IN (
+            SELECT dic.sales_invoice
+            FROM `tabDlits Invoice Commission` dic
+            WHERE dic.sales_invoice IS NOT NULL
+              AND dic.sales_invoice != ''
+        )
+    """
+
+
 # ---------------------------------------------------------------------------
 # Enrichment — profit + commission (works with negative amounts for returns)
 # ---------------------------------------------------------------------------
@@ -268,7 +282,8 @@ def _get_individual_invoices(sales_partner, from_date, to_date, commission_rate,
                               exclude_unpaid_returns, exclude_partial_returns,
                               service_cost_percentage, current_doc):
     base_values = {"sales_partner": sales_partner, "from_date": from_date, "to_date": to_date}
-    exclude     = _exclude_marked_clause("is_marked", current_doc)
+    exclude            = _exclude_marked_clause("is_marked", current_doc)
+    exclude_buyer_rep  = _exclude_invoice_commission_clause()
     join, brand_item_filter, extra_values = _build_brand_item_join(brand, item)
 
     cc_filter = ""
@@ -290,6 +305,7 @@ def _get_individual_invoices(sales_partner, from_date, to_date, commission_rate,
               {cc_filter}
               {payment_filter}
               {exclude}
+              {exclude_buyer_rep}
               {brand_item_filter}
             ORDER BY si.posting_date
         """, values, as_dict=True)
@@ -484,13 +500,16 @@ def reject_commission(name, rejection_reason=""):
 
 @frappe.whitelist()
 def create_payment_journal_entry(name, payment_date, expense_account, payment_account,
-                                  amount, cheque_no=None):
+                                  amount, cost_center, cheque_no=None):
     doc = frappe.get_doc("Dlits Commission Management", name)
     if doc.status != "Approved":
         frappe.throw("Commission must be in 'Approved' status before making a payment.")
     amount = flt(amount)
     if amount <= 0:
         frappe.throw("Payment amount must be greater than zero.")
+
+    if not cost_center:
+        frappe.throw("Cost Center is required.")
 
     company = (frappe.defaults.get_user_default("Company")
                or frappe.db.get_single_value("Global Defaults", "default_company"))
@@ -506,7 +525,7 @@ def create_payment_journal_entry(name, payment_date, expense_account, payment_ac
                 "account": expense_account,
                 "debit_in_account_currency": amount,
                 "credit_in_account_currency": 0,
-                "cost_center": doc.get("cost_center") or None,
+                "cost_center": cost_center,
                 "user_remark": f"Commission — {doc.name}",
             },
             {

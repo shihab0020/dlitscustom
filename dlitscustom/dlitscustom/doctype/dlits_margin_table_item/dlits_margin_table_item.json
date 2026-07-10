@@ -1,0 +1,170 @@
+{
+ "actions": [],
+ "creation": "2026-07-09 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "qty",
+  "rate",
+  "cost",
+  "amount",
+  "cost_amount",
+  "margin_amount",
+  "margin_pct",
+  "discount_type",
+  "discount",
+  "net_rate",
+  "net_amount",
+  "net_margin",
+  "net_margin_pct",
+  "is_non_stock",
+  "items_row_ref"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty",
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Rate (SAR)",
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "cost",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Cost (SAR)",
+   "bold": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "read_only": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "cost_amount",
+   "fieldtype": "Currency",
+   "label": "Cost Amount",
+   "read_only": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "margin_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Gross Margin",
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "margin_pct",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "GM %",
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "discount_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Disc. Type",
+   "options": "Percentage\nFixed Amount",
+   "default": "Percentage",
+   "columns": 1
+  },
+  {
+   "fieldname": "discount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Discount",
+   "columns": 1
+  },
+  {
+   "fieldname": "net_rate",
+   "fieldtype": "Currency",
+   "label": "Net Rate",
+   "read_only": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "net_amount",
+   "fieldtype": "Currency",
+   "label": "Net Amount",
+   "read_only": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "net_margin",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Net Margin",
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "net_margin_pct",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "NM %",
+   "read_only": 1,
+   "columns": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_non_stock",
+   "fieldtype": "Check",
+   "label": "Non-Stock",
+   "read_only": 1,
+   "hidden": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "items_row_ref",
+   "fieldtype": "Data",
+   "label": "Items Row Ref",
+   "read_only": 1,
+   "hidden": 1,
+   "print_hide": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-07-09 00:00:00",
+ "modified_by": "Administrator",
+ "module": "dlitscustom",
+ "name": "Dlits Margin Table Item",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

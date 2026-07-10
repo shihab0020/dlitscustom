@@ -189,10 +189,14 @@ def create_payment_additional_salary(name, employee, salary_component, payroll_d
 
 
 @frappe.whitelist()
-def create_payment_journal_entry(name, payment_date, expense_account, payment_account, amount, cheque_no=None):
+def create_payment_journal_entry(name, payment_date, expense_account, payment_account,
+                                  amount, cost_center, cheque_no=None):
     doc = frappe.get_doc("Dlits Invoice Commission", name)
     if doc.status not in ("Approved", "Partially Paid"):
         frappe.throw("Commission must be 'Approved' before recording a payment.")
+
+    if not cost_center:
+        frappe.throw("Cost Center is required.")
 
     company = (
         frappe.defaults.get_user_default("Company")
@@ -210,6 +214,7 @@ def create_payment_journal_entry(name, payment_date, expense_account, payment_ac
                 "account": expense_account,
                 "debit_in_account_currency": flt(amount),
                 "credit_in_account_currency": 0,
+                "cost_center": cost_center,
                 "user_remark": f"Commission — {doc.name}",
             },
             {

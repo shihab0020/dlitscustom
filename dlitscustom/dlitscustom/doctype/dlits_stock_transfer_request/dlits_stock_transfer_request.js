@@ -21,6 +21,39 @@ frappe.ui.form.on("Dlits Stock Transfer Request", {
 		frm.fields_dict.items.grid.refresh();
 	},
 
+	before_workflow_action(frm) {
+		const action = frm.selected_workflow_action;
+		if (action === "Abandon" || action === "Cancel") {
+			return new Promise((resolve, reject) => {
+				const label = action === "Abandon" ? __("Reason for Abandoning") : __("Reason for Cancelling");
+				const title = action === "Abandon" ? __("Abandon Request") : __("Cancel Request");
+				const btn   = action === "Abandon" ? __("Confirm Abandon") : __("Confirm Cancel");
+				let d = new frappe.ui.Dialog({
+					title: title,
+					fields: [{
+						fieldname: "reason",
+						label: label,
+						fieldtype: "Small Text",
+						reqd: 1,
+						default: frm.doc.abandonment_reason || ""
+					}],
+					primary_action_label: btn,
+					primary_action(values) {
+						d.hide();
+						frappe.model.set_value(frm.doctype, frm.docname, "abandonment_reason", values.reason);
+						resolve();
+					},
+					secondary_action_label: __("Go Back"),
+					secondary_action() {
+						d.hide();
+						reject();
+					}
+				});
+				d.show();
+			});
+		}
+	},
+
 	render_status_badge(frm) {
 		const colours = {
 			"Draft": "grey",
@@ -31,6 +64,7 @@ frappe.ui.form.on("Dlits Stock Transfer Request", {
 			"Received": "purple",
 			"Completed": "green",
 			"Cancelled": "red",
+			"Abandoned": "red",
 		};
 		frm.page.set_indicator(frm.doc.status, colours[frm.doc.status] || "grey");
 	},

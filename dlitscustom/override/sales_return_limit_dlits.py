@@ -1,21 +1,38 @@
 import frappe
 from frappe.utils import flt
 
+REBATE_ITEM = "Rebate / Return / Discount"
+
 
 def sales_return_limit_dlits(doc, method=None):
     if not doc.get("is_return") or not doc.get("return_against"):
         return
 
-    _check_return_items_valid(doc)      # only items from original invoice allowed
+    _check_return_items_valid(doc)      # only items from original invoice allowed (rebate item exempt)
     _check_buyer_rep_commission(doc)    # buyer rep commission must be settled first
     _check_paid_commission(doc)         # monthly commission protection
-    _check_return_limit(doc)            # total return must not exceed original amount
+    _check_return_limit(doc)            # total return must not exceed original (rebate items uncapped)
+    _notify_rebate_item(doc)            # info message if rebate item present
+
+
+def sales_return_before_submit(doc, method=None):
+    """Require Shb Rebate Approval role to submit a credit note that contains the rebate item."""
+    if not doc.get("is_return"):
+        return
+    if any(item.item_code == REBATE_ITEM for item in doc.items):
+        if "Shb Rebate Approval" not in frappe.get_roles():
+            frappe.throw(
+                f"Credit notes containing item <b>{REBATE_ITEM}</b> require "
+                f"a user with the <b>Shb Rebate Approval</b> role to submit.<br><br>"
+                f"Please ask an authorised approver to review and submit this credit note.",
+                title="Rebate Approval Required"
+            )
 
 
 # ── 1. Item validation ───────────────────────────────────────────────────────
 
 def _check_return_items_valid(doc):
-    """Block any return item that was not in the original invoice."""
+    """Block return items not in the original invoice. Rebate item is always allowed."""
     original_item_codes = {
         row[0] for row in frappe.db.sql(
             "SELECT item_code FROM `tabSales Invoice Item` WHERE parent = %s",
@@ -27,17 +44,31 @@ def _check_return_items_valid(doc):
         item.item_code
         for item in doc.items
         if item.item_code not in original_item_codes
+        and item.item_code != REBATE_ITEM      # rebate item is exempt from this check
     ]
 
     if invalid:
         frappe.throw(
             f"Sales return on <b>{doc.return_against}</b> can only include items "
-            f"that were in the original invoice.<br><br>"
+            f"that were in the original invoice (or <b>{REBATE_ITEM}</b>).<br><br>"
             f"The following items are <b>not</b> in the original invoice:<br>"
             + "<br>".join(f"&nbsp;&nbsp;• {i}" for i in invalid)
             + "<br><br>Remove them before saving.",
             title="Invalid Return Items"
         )
+
+
+def _notify_rebate_item(doc):
+    """Inform the user that rebate items require Shb Rebate Approval to submit."""
+    if any(item.item_code == REBATE_ITEM for item in doc.items):
+        if "Shb Rebate Approval" not in frappe.get_roles():
+            frappe.msgprint(
+                f"This credit note contains <b>{REBATE_ITEM}</b>.<br>"
+                f"A user with the <b>Shb Rebate Approval</b> role must submit it — "
+                f"you can save as draft and ask them to review.",
+                indicator="orange",
+                title="Rebate Approval Required to Submit"
+            )
 
 
 # ── 2. Buyer Representative Commission check ─────────────────────────────────
@@ -147,6 +178,10 @@ def _check_paid_commission(doc):
 # ── 4. Return amount limit ───────────────────────────────────────────────────
 
 def _check_return_limit(doc):
+    # Rebate items have no cap — skip limit check when any rebate item is present
+    if any(item.item_code == REBATE_ITEM for item in doc.items):
+        return
+
     original_grand_total = flt(
         frappe.db.get_value("Sales Invoice", doc.return_against, "grand_total")
     )

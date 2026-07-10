@@ -8,6 +8,7 @@
   "naming_series",
   "title",
   "status",
+  "abandonment_reason",
   "request_type",
   "company",
   "request_date",
@@ -73,10 +74,18 @@
    "in_standard_filter": 1,
    "label": "Status",
    "no_copy": 1,
-   "options": "Draft\nPending Approval\nApproved\nRejected\nDelivered\nReceived\nCompleted\nCancelled",
+   "options": "Draft\nPending Approval\nApproved\nRejected\nDelivered\nReceived\nCompleted\nCancelled\nAbandoned",
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "depends_on": "eval:['Abandoned','Cancelled'].includes(doc.status)",
+   "fieldname": "abandonment_reason",
+   "fieldtype": "Small Text",
+   "label": "Abandonment / Cancellation Reason",
+   "no_copy": 1,
+   "read_only_depends_on": "eval:['Abandoned','Cancelled'].includes(doc.status)"
   },
   {
    "default": "Transfer",
@@ -348,6 +357,10 @@
   {
    "create": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1,
    "role": "Shb Basic User", "share": 1, "write": 1
+  },
+  {
+   "email": 1, "export": 1, "print": 1, "read": 1, "report": 1,
+   "role": "Shb Stock Transfer Controller", "share": 1, "write": 1
   }
  ],
  "search_fields": "requested_by,receiver_name,status,request_type",
@@ -361,7 +374,8 @@
   {"color": "Blue",   "title": "Delivered"},
   {"color": "Purple", "title": "Received"},
   {"color": "Green",  "title": "Completed"},
-  {"color": "Red",    "title": "Cancelled"}
+  {"color": "Red",    "title": "Cancelled"},
+  {"color": "Red",    "title": "Abandoned"}
  ],
  "title_field": "title",
  "track_changes": 1
