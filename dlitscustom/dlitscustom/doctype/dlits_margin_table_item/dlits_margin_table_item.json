@@ -5,7 +5,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "item_code",
+  "item_ref",
   "item_name",
   "qty",
   "rate",
@@ -25,7 +25,7 @@
  ],
  "fields": [
   {
-   "fieldname": "item_code",
+   "fieldname": "item_ref",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Item",

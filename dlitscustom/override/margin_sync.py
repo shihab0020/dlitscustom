@@ -3,6 +3,21 @@ from dlitscustom.override.margin_table_utils import get_item_costs
 import json
 
 
+def migrate_item_ref():
+    """One-time migration: copy item_code → item_ref for rows saved before the field rename."""
+    frappe.db.sql("""
+        UPDATE `tabDlits Margin Table Item`
+        SET item_ref = item_code
+        WHERE (item_ref IS NULL OR item_ref = '')
+          AND item_code IS NOT NULL
+          AND item_code != ''
+    """)
+    frappe.db.commit()
+    count = frappe.db.sql("SELECT COUNT(*) FROM `tabDlits Margin Table Item` WHERE item_ref IS NOT NULL AND item_ref != %s", ('',))[0][0]
+    null_count = frappe.db.sql("SELECT COUNT(*) FROM `tabDlits Margin Table Item` WHERE (item_ref IS NULL OR item_ref = %s)", ('',))[0][0]
+    print(f"Migration done. With item_ref: {count}, Missing item_ref: {null_count}")
+
+
 def sync_margin_table(doc, method=None):
     """
     Server-side margin table sync. Runs on validate for Quotation, Sales Order, Sales Invoice.
@@ -66,7 +81,7 @@ def sync_margin_table(doc, method=None):
         net_margin_pct = (net_margin / net_amount * 100) if net_amount else 0
 
         doc.append("dlits_margin_table", {
-            "item_code":     item.item_code,
+            "item_ref":      item.item_code,
             "item_name":     item.item_name or "",
             "qty":           qty,
             "rate":          rate,

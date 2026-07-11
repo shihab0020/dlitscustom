@@ -600,19 +600,34 @@ def check_zatca_rejections():
 
 
 def check_margin_links():
-	"""Debug: list all DocType Link rows involving Dlits Margin Table Item."""
+	"""Debug: show live linked_doctypes for Item and any DocType Link rows for Dlits Margin."""
+	from frappe.desk.form.linked_with import _get_linked_doctypes
+
+	# Bypass cache — call _get_linked_doctypes directly
+	linked = _get_linked_doctypes("Item")
+	selling_keys = [k for k in linked if any(x in k for x in ("Invoice", "Order", "Quotation", "Margin", "Dlits"))]
+	print("=== Item linked_doctypes (no cache) — selling/margin keys ===")
+	for k in selling_keys:
+		print(f"  {k}: {linked[k]}")
+
+	# DocType Link rows
 	rows = frappe.db.sql(
 		"SELECT name, parent, link_doctype, link_fieldname, is_child_table, "
-		"table_fieldname, parent_doctype, custom "
+		"table_fieldname, parent_doctype "
 		"FROM `tabDocType Link` "
 		"WHERE link_doctype LIKE '%Margin%' OR parent_doctype LIKE '%Margin%' "
 		"   OR (parent='Item' AND link_doctype LIKE '%Dlits%') "
 		"ORDER BY parent, link_doctype",
 		as_dict=True,
 	)
+	print(f"\n=== DocType Link rows for Margin/Dlits ({len(rows)} total) ===")
 	for r in rows:
 		print(dict(r))
-	print(f"Total: {len(rows)}")
+
+	# Also check if Dlits Margin Table Item.item_code is Link or Data in DB
+	ft = frappe.db.get_value("DocField",
+		{"parent": "Dlits Margin Table Item", "fieldname": "item_code"}, "fieldtype")
+	print(f"\nDlits Margin Table Item.item_code fieldtype in DB: {ft}")
 
 
 def fix_margin_connections():
