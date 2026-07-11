@@ -429,6 +429,213 @@ def update_dlits_workspace():
 	print("Workspace updated: Stock Transfer Management section added.")
 
 
+def zatca_check_credentials():
+	"""Check ZATCA Business Settings credentials and certificate state."""
+	rows = frappe.get_all(
+		"ZATCA Business Settings",
+		fields=["name", "company", "fatoora_server", "status",
+		        "enable_zatca_integration", "type_of_business_transactions",
+		        "security_token", "secret",
+		        "production_security_token", "production_secret",
+		        "compliance_request_id", "production_request_id"],
+		limit=5,
+	)
+	print("=== ZATCA Business Settings ===")
+	for r in rows:
+		print(f"  company:                  {r.company}")
+		print(f"  fatoora_server:           {r.fatoora_server}")
+		print(f"  status:                   {r.status}")
+		print(f"  enable_zatca_integration: {r.enable_zatca_integration}")
+		print(f"  type_of_biz_transactions: {r.type_of_business_transactions}")
+		print(f"  compliance_request_id:    {r.compliance_request_id}")
+		print(f"  production_request_id:    {r.production_request_id}")
+		print(f"  has compliance token:     {bool(r.security_token)}")
+		print(f"  has compliance secret:    {bool(r.secret)}")
+		print(f"  has PRODUCTION token:     {bool(r.production_security_token)}")
+		print(f"  has PRODUCTION secret:    {bool(r.production_secret)}")
+		print()
+
+	# Check ksa_compliance zatca_api.py to understand how it builds auth
+	print("=== ZATCA Integration Log — last 5 (any status) ===")
+	logs = frappe.get_all(
+		"ZATCA Integration Log",
+		fields=["name", "status", "zatca_http_status_code", "invoice_additional_fields_reference", "creation"],
+		order_by="creation desc",
+		limit=8,
+	)
+	for lg in logs:
+		print(f"  {lg.creation}  HTTP {lg.zatca_http_status_code}  {lg.status}  → {lg.invoice_additional_fields_reference}")
+
+
+def old_zatca_check_credentials():
+	"""Check ZATCA Business Settings credentials and certificate expiry."""
+	# Check Phase 2 settings
+	try:
+		settings = frappe.get_all(
+			"ZATCA Phase 2 Business Settings",
+			fields=["name", "company", "environment", "certificate_validity_date",
+			        "api_url", "otp", "signed_certificate_csid",
+			        "private_key", "secret"],
+			limit=5,
+		)
+		print("=== ZATCA Phase 2 Business Settings ===")
+		for s in settings:
+			print(f"  company: {s.company}")
+			print(f"  environment: {s.get('environment', '?')}")
+			print(f"  api_url: {s.get('api_url', '?')}")
+			print(f"  certificate_validity_date: {s.get('certificate_validity_date', 'NOT SET')}")
+			has_cert   = bool(s.get("signed_certificate_csid") or s.get("secret"))
+			has_key    = bool(s.get("private_key"))
+			print(f"  has CSID/secret: {has_cert}")
+			print(f"  has private key: {has_key}")
+			print()
+	except Exception as e:
+		print(f"Error reading Phase 2 settings: {e}")
+
+	# Also check raw ZATCA message for more detail
+	print("=== Raw zatca_message from DB ===")
+	rows = frappe.db.sql("""
+		SELECT invoice_additional_fields_reference, zatca_http_status_code,
+		       zatca_message, zatca_status
+		FROM `tabZATCA Integration Log`
+		WHERE invoice_additional_fields_reference IN (
+			'IN2607J1S006373-AdditionalFields-8733',
+			'IN2607J1S006372-AdditionalFields-8731'
+		)
+		ORDER BY creation DESC LIMIT 4
+	""", as_dict=True)
+	for r in rows:
+		print(f"  {r.invoice_additional_fields_reference}")
+		print(f"    HTTP {r.zatca_http_status_code} | zatca_status: {r.zatca_status}")
+		print(f"    message: {r.zatca_message}")
+
+
+def zatca_rejection_details2():
+	"""Fetch ZATCA rejection reasons from ZATCA Integration Log."""
+	names = [
+		"IN2607J1S006373-AdditionalFields-8733",
+		"RT-IN2607J2S001180-AdditionalFields-8732",
+		"IN2607J1S006372-AdditionalFields-8731",
+		"RT-IN2607J1S002010-AdditionalFields-8730",
+	]
+	for n in names:
+		print("=" * 70)
+		print("DOC:", n)
+		logs = frappe.get_all(
+			"ZATCA Integration Log",
+			filters={"invoice_additional_fields_reference": n},
+			fields=["name", "status", "zatca_status", "zatca_http_status_code", "zatca_message"],
+			order_by="creation desc",
+			limit=3,
+		)
+		if not logs:
+			print("  No ZATCA Integration Log found.")
+		for lg in logs:
+			print(f"  HTTP: {lg.zatca_http_status_code}  status: {lg.status}  zatca_status: {lg.zatca_status}")
+			print(f"  MESSAGE: {str(lg.zatca_message or '')[:2000]}")
+
+
+def zatca_rejection_details():
+	"""Fetch ZATCA API rejection reason from comments + log on the 4 rejected docs."""
+	names = [
+		"IN2607J1S006373-AdditionalFields-8733",
+		"RT-IN2607J2S001180-AdditionalFields-8732",
+		"IN2607J1S006372-AdditionalFields-8731",
+		"RT-IN2607J1S002010-AdditionalFields-8730",
+	]
+	for n in names:
+		print("=" * 70)
+		print("DOC:", n)
+		# comments
+		comments = frappe.get_all(
+			"Comment",
+			filters={"reference_doctype": "Sales Invoice Additional Fields", "reference_name": n},
+			fields=["comment_type", "content", "creation"],
+			order_by="creation desc",
+			limit=5,
+		)
+		for c in comments:
+			print(f"  [{c.comment_type}] {c.content[:1500]}")
+		if not comments:
+			print("  (no comments)")
+		# Also check if there is a ZATCA log / integration details child
+		try:
+			logs = frappe.get_all(
+				"ZATCA Integration Details",
+				filters={"sales_invoice_additional_fields": n},
+				fields=["name", "result_message", "rejection_reason", "response"],
+				order_by="creation desc", limit=3,
+			)
+			for lg in logs:
+				print(f"  LOG: {lg}")
+		except Exception:
+			pass
+
+
+def check_zatca_rejections():
+	"""Print details of the latest ZATCA-rejected Sales Invoice Additional Fields docs."""
+	rows = frappe.get_all(
+		"Sales Invoice Additional Fields",
+		filters={"integration_status": "Rejected", "is_latest": 1},
+		fields=["name", "sales_invoice", "invoice_doctype", "invoice_type_code",
+		        "invoice_type_transaction", "integration_status",
+		        "validation_messages", "validation_errors", "modified"],
+		order_by="modified desc",
+		limit=10,
+	)
+	for r in rows:
+		print("=" * 60)
+		for k, v in r.items():
+			if v:
+				print(f"  {k}: {str(v)[:500]}")
+		# Also check Comments for ZATCA response details
+		comments = frappe.db.sql("""
+			SELECT content FROM `tabComment`
+			WHERE reference_doctype='Sales Invoice Additional Fields'
+			  AND reference_name=%s
+			ORDER BY creation DESC LIMIT 5
+		""", r.name, as_dict=True)
+		for c in comments:
+			print(f"  COMMENT: {str(c.content)[:800]}")
+
+
+def check_margin_links():
+	"""Debug: list all DocType Link rows involving Dlits Margin Table Item."""
+	rows = frappe.db.sql(
+		"SELECT name, parent, link_doctype, link_fieldname, is_child_table, "
+		"table_fieldname, parent_doctype, custom "
+		"FROM `tabDocType Link` "
+		"WHERE link_doctype LIKE '%Margin%' OR parent_doctype LIKE '%Margin%' "
+		"   OR (parent='Item' AND link_doctype LIKE '%Dlits%') "
+		"ORDER BY parent, link_doctype",
+		as_dict=True,
+	)
+	for r in rows:
+		print(dict(r))
+	print(f"Total: {len(rows)}")
+
+
+def fix_margin_connections():
+	"""
+	Remove auto-created DocType Link rows for Dlits Margin Table Item on
+	Sales Order, Sales Invoice, and Quotation.  These rows cause Item connections
+	to filter through the margin child table instead of the standard items table,
+	showing only 1 result instead of all.
+	"""
+	# Frappe auto-creates a DocType Link whenever a child table has a Link field.
+	# Our margin table (Dlits Margin Table Item) has item_code → Item, so Frappe
+	# created links: SO/SI/Quotation → Item through the margin table.
+	# These OVERRIDE the standard SO Item / SI Item links in the Connections tab.
+	deleted = frappe.db.sql(
+		"DELETE FROM `tabDocType Link` "
+		"WHERE link_doctype = 'Dlits Margin Table Item' "
+		"   AND link_fieldname = 'item_code'",
+	)
+	frappe.db.commit()
+	frappe.clear_cache()
+	print(f"Deleted DocType Link rows for Dlits Margin Table Item.item_code → Item.")
+
+
 def rebuild_dlits_workspace():
 	"""
 	Completely rebuild the DLITS Custom workspace from scratch.
